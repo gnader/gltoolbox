@@ -1,3 +1,4 @@
+
 /**
   * This file is part of gltoolbox
   *
@@ -24,47 +25,42 @@
   * SOFTWARE.
   */
 
-#ifndef __GLTOOLBOX_SHADER_H__
-#define __GLTOOLBOX_SHADER_H__
+#ifndef __GLTOOLBOX_PROGRAM_H__
+#define __GLTOOLBOX_PROGRAM_H__
 
-#include <string>
-
-#include "gl.h"
+#include <unordered_set>
 
 namespace gltoolbox
 {
-  class Shader
-  {
-  protected:
-    static void read_source_from_file(const std::string &filename,
-                                      std::string &source);
+  //forward declaration
+  class Shader;
 
+  class Program
+  {
   public:
-    Shader(GLenum type = GL_FRAGMENT_SHADER);
-    virtual ~Shader();
+    Program();
+    virtual ~Program();
 
     inline unsigned int id() const { return mId; }
     inline bool is_valid() const { return mId != 0; }
 
-    inline GLenum type() const { return mType; }
-    std::string type_string() const;
+    void attach_shader(Shader *s);
+    void detach_shader(Shader *s);
 
-    const std::string &filename() const { return mFilename; }
+    bool link() const;
+    bool is_linked() const;
 
-    bool compile() const;
-    bool is_compiled() const;
+    void activate() const;
+    void desactivate() const;
 
-    bool load_source_from_file(const std::string &filename = "");
-    bool load_source_from_string(const std::string &source);
-    bool reload();
+    int getAttributeLocation(const char *name) const;
+    int getUniformLocation(const char *name) const;
 
     void print_info_log() const;
 
   protected:
     unsigned int mId;
-    GLenum mType;
-
-    std::string mFilename;
+    std::unordered_set<Shader *> mShaders;
   };
 }
 
