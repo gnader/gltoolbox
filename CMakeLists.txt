@@ -11,7 +11,9 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
 
-#glfw
+## DEPENDENCIES
+#-------------------------------------------------------------------- 
+# glfw
 find_package(GLFW REQUIRED)
 if(GLFW_FOUND)
   include_directories(${GLFW_INCLUDE_DIR})
@@ -20,6 +22,7 @@ if(GLFW_FOUND)
   message("${GLFW_INCLUDE_DIR}")
   message("${GLFW_LIBRARIES}")
 endif()
+
 # glbinding
 find_package(GLBINDING REQUIRED)
 if(GLBINDING_FOUND)
@@ -29,4 +32,25 @@ if(GLBINDING_FOUND)
   message("${GLBINDING_LIBRARIES}")
 endif()
 
+## INCLUDES
+#--------------------------------------------------------------------
 include_directories(${PROJECT_SOURCE_DIR}/source/include)
+
+## FILES
+#--------------------------------------------------------------------
+set(source
+    ${PROJECT_SOURCE_DIR}/source/source/shader.cpp)
+
+set(header
+    ${PROJECT_SOURCE_DIR}/source/include/gltoolbox/gl.h
+    ${PROJECT_SOURCE_DIR}/source/include/gltoolbox/gltoolbox.h
+    ${PROJECT_SOURCE_DIR}/source/include/gltoolbox/shader.h)
+
+## GLTOOLBOX
+#--------------------------------------------------------------------
+add_library(gltoolbox ${source} ${header})
+
+## EXAMPLES
+#--------------------------------------------------------------------
+add_executable(gl examples/gl.cpp)
+target_link_libraries(gl gltoolbox ${GLBINDING_LIBRARIES} ${GLFW_LIBRARIES})

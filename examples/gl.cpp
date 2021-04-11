@@ -24,11 +24,41 @@
   * SOFTWARE.
   */
 
-#ifndef __GLTOOLBOX_H__
-#define __GLTOOLBOX_H__
+#include <iostream>
+using namespace std;
 
-#include "gl.h"
+#include <GLFW/glfw3.h>
+#include <gltoolbox/gltoolbox.h>
 
-#include "shader.h"
+void error(int errnum, const char *errmsg)
+{
+  std::cerr << errnum << ": " << errmsg << std::endl;
+}
 
-#endif // __GLTOOLBOX_H__
+int main(int argc, char **argv)
+{
+  glfwSetErrorCallback(error);
+
+  if (!glfwInit())
+    return 1;
+
+  glfwDefaultWindowHints();
+  glfwWindowHint(GLFW_VISIBLE, false);
+
+  auto window = glfwCreateWindow(320, 240, "", nullptr, nullptr);
+  if (!window)
+  {
+    glfwTerminate();
+    return -1;
+  }
+  glfwHideWindow(window);
+
+  glfwMakeContextCurrent(window);
+
+  glbinding::Binding::initialize(glfwGetProcAddress, true);
+
+  std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+  std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+
+  return 0;
+}
