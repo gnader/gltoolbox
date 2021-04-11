@@ -24,43 +24,51 @@
   * SOFTWARE.
   */
 
-#ifndef __GLTOOLBOX_PROGRAM_H__
-#define __GLTOOLBOX_PROGRAM_H__
+#include <gltoolbox/buffer.h>
 
-#include <unordered_set>
+using namespace gltoolbox;
 
-namespace gltoolbox
+Buffer::Buffer(GLenum target)
+    : mId(0), mTarget(target)
 {
-  //forward declaration
-  class Shader;
-
-  class Program
-  {
-  public:
-    Program();
-    virtual ~Program();
-
-    inline unsigned int id() const { return mId; }
-    inline bool is_valid() const { return mId != 0; }
-
-    void attach_shader(Shader *s);
-    void detach_shader(Shader *s);
-
-    bool link() const;
-    bool is_linked() const;
-
-    void activate() const;
-    void desactivate() const;
-
-    int getAttributeLocation(const char *name) const;
-    int getUniformLocation(const char *name) const;
-
-    void print_info_log() const;
-
-  protected:
-    unsigned int mId;
-    std::unordered_set<Shader *> mShaders;
-  };
+  glCreateBuffers(1, &mId);
 }
 
-#endif
+Buffer::~Buffer()
+{
+  glDeleteBuffers(1, &mId);
+}
+
+GLint Buffer::size() const
+{
+  GLint sz = 0;
+  bind();
+  glGetBufferParameteriv(mTarget, GL_BUFFER_SIZE, &sz);
+  return sz;
+}
+
+// Binds the buffer to target.
+void Buffer::bind() const
+{
+  glBindBuffer(mTarget, mId);
+}
+
+// Unbinds a specific target, i.e. binds a 0 id to the target.
+void Buffer::unbind() const
+{
+  glBindBuffer(mTarget, 0);
+}
+
+// Creates video memory for the buffer.
+void Buffer::set_data(GLsizeiptr size, const GLvoid *data, GLenum usage)
+{
+  bind();
+  glBufferData(mTarget, size, data, usage);
+}
+
+// Writes data only to a defined area of the memory.
+void Buffer::set_subdata(GLintptr offset, GLsizeiptr size, const GLvoid *data)
+{
+  bind();
+  glBufferSubData(mTarget, offset, size, data);
+}
