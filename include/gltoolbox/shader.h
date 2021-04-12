@@ -35,36 +35,45 @@ namespace gltoolbox
 {
   class Shader
   {
-  protected:
-    static void read_source_from_file(const std::string &filename,
-                                      std::string &source);
-
   public:
     Shader(GLenum type = GL_FRAGMENT_SHADER);
+
+    Shader(const Shader &other) = delete;
+    Shader(Shader &&temp);
+
     virtual ~Shader();
 
-    inline unsigned int id() const { return mId; }
-    inline bool is_valid() const { return mId != 0; }
+    Shader &operator=(const Shader &other) = delete;
+    Shader &operator==(Shader &temp);
 
-    inline GLenum type() const { return mType; }
-    std::string type_string() const;
-
-    const std::string &filename() const { return mFilename; }
+    void set_source(const std::string &src) const;
+    void set_source_from_file(const std::string &filename) const;
 
     bool compile() const;
-    bool is_compiled() const;
 
-    bool load_source_from_file(const std::string &filename = "");
-    bool load_source_from_string(const std::string &source);
-    bool reload();
+    inline GLuint id() const { return mId; }
 
-    void print_info_log() const;
+    inline bool is_valid() const { return glIsShader(mId) != 0; }
+
+    inline bool is_compile() const { return get_parameter(GL_COMPILE_STATUS) != 0; }
+
+    inline bool is_delete() const { return get_parameter(GL_DELETE_STATUS) != 0; }
+
+    inline GLenum type() const { return GLenum(get_parameter(GL_SHADER_TYPE)); }
+    std::string type_as_str() const;
+
+    std::string info_log() const;
+    inline GLsizei info_log_length() const { return get_parameter(GL_INFO_LOG_LENGTH); }
+
+    std::string source() const;
+    inline GLsizei source_length() const { return get_parameter(GL_SHADER_SOURCE_LENGTH); }
 
   protected:
-    unsigned int mId;
-    GLenum mType;
+    GLint get_parameter(const GLenum param) const;
 
-    std::string mFilename;
+  protected:
+    GLuint mId;
+    bool mOwned;
   };
 }
 

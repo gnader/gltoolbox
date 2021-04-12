@@ -29,41 +29,61 @@ using namespace gltoolbox;
 
 #include <fstream>
 
-void Shader::read_source_from_file(const std::string &filename, std::string &source)
+Shader::Shader(GLenum type)
+    : mId(0), mOwned(true)
 {
-  //initialise source
-  source = "";
-
-  //open file
-  std::fstream file(filename.c_str(), std::ios::in);
-  if (!file.is_open())
-  {
-    return;
-  }
-
-  //read file
-  std::string buffer;
-  while (std::getline(file, buffer))
-    source += buffer;
-
-  //close file
-  file.close();
+  mId = glCreateShader(type);
 }
 
-Shader::Shader(GLenum type)
-    : mId(0), mType(type), mFilename("")
+Shader::Shader(Shader &&temp)
 {
-  mId = glCreateShader(mType);
+  mId = temp.mId;
+  mOwned = temp.mOwned;
+
+  temp.mId = 0;
+  temp.mOwned = false;
 }
 
 Shader::~Shader()
 {
-  glDeleteShader(mId);
+  if (mOwned && is_valid())
+    glDeleteShader(mId);
 }
 
-std::string Shader::type_string() const
+Shader &Shader::operator==(Shader &temp)
 {
-  switch (mType)
+  mId = temp.mId;
+  mOwned = temp.mOwned;
+
+  temp.mId = 0;
+  temp.mOwned = false;
+
+  return *this;
+}
+
+void Shader::set_source(const std::string &src) const
+{
+  const GLchar *_src = src.c_str();
+  glShaderSource(mId, 1, (const GLchar **)&_src, 0);
+}
+
+void Shader::set_source_from_file(const std::string &filename) const
+{
+  std::ifstream stream(filename);
+  set_source(std::string(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>()));
+}
+
+bool Shader::compile() const
+{
+  if (is_valid())
+    glCompileShader(mId);
+
+  return is_compile();
+}
+
+std::string Shader::type_as_str() const
+{
+  switch (type())
   {
   case GL_FRAGMENT_SHADER:
     return "Fragment Shader";
@@ -89,64 +109,20 @@ std::string Shader::type_string() const
   }
 }
 
-bool Shader::compile() const
+std::string Shader::info_log() const
 {
-  if (is_valid())
-    glCompileShader(mId);
+  std::string log;
+  log.resize(info_log_length());
+  glGetShaderInfoLog(id(), static_cast<GLsizei>(log.size()), 0, log.data());
 
-  bool status = is_compiled();
-  if (!status)
-    print_info_log();
-
-  return status;
+  return log;
 }
 
-bool Shader::is_compiled() const
+std::string Shader::source() const
 {
-  int status = 0;
+  std::string src;
+  src.resize(source_length());
+  glGetShaderSource(id(), static_cast<GLsizei>(src.size()), 0, src.data());
 
-  if (is_valid())
-    glGetShaderiv(mId, GL_COMPILE_STATUS, &status);
-
-  return status;
-}
-
-bool Shader::load_source_from_file(const std::string &filename)
-{
-  if (filename != "")
-    mFilename = filename;
-
-  std::string source;
-  Shader::read_source_from_file(mFilename, source);
-  bool status = load_source_from_string(source);
-
-  return status;
-}
-
-bool Shader::load_source_from_string(const std::string &source)
-{
-  if (is_valid())
-  {
-    const GLchar *src = source.c_str();
-    glShaderSource(mId, 1, (const GLchar **)&src, 0);
-  }
-
-  return compile();
-}
-
-bool Shader::reload()
-{
-  return load_source_from_file(mFilename);
-}
-
-void Shader::print_info_log() const
-{
-  int length = 0;
-  glGetShaderiv(id(), GL_INFO_LOG_LENGTH, &length);
-
-  if (length > 0)
-  {
-    std::vector<char> log(length);
-    glGetShaderInfoLog(id(), length, &length, log.data());
-  }
+  return src;
 }
