@@ -31,4 +31,30 @@
 #include <glbinding/gl/gl.h>
 using namespace gl;
 
+namespace gltoolbox
+{
+  class GL
+  {
+  public:
+    // all member functions are static, constructor is not needed
+    GL() = delete;
+
+  public:
+    static void initilize(glbinding::GetProcAddress functionPointer, bool resolve = true)
+    {
+      glbinding::Binding::initialize(functionPointer, resolve);
+    }
+
+    static const GLubyte *gl_version()
+    {
+      return glGetString(GL_VERSION);
+    }
+
+    static const GLubyte *glsl_version()
+    {
+      return glGetString(GL_SHADING_LANGUAGE_VERSION);
+    }
+  };
+}
+
 #endif // __GL_H__

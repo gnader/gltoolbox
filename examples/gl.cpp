@@ -25,20 +25,12 @@
   */
 
 #include <iostream>
-using namespace std;
 
 #include <GLFW/glfw3.h>
 #include <gltoolbox/gltoolbox.h>
 
-void error(int errnum, const char *errmsg)
-{
-  std::cerr << errnum << ": " << errmsg << std::endl;
-}
-
 int main(int argc, char **argv)
 {
-  glfwSetErrorCallback(error);
-
   if (!glfwInit())
     return 1;
 
@@ -52,13 +44,12 @@ int main(int argc, char **argv)
     return -1;
   }
   glfwHideWindow(window);
-
   glfwMakeContextCurrent(window);
 
-  glbinding::Binding::initialize(glfwGetProcAddress, true);
+  gltoolbox::GL::initilize(glfwGetProcAddress);
 
-  std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
-  std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+  std::cout << "OpenGL version: " << gltoolbox::GL::gl_version() << std::endl;
+  std::cout << "GLSL version: " << gltoolbox::GL::glsl_version() << std::endl;
 
   return 0;
 }
