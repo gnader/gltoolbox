@@ -55,9 +55,9 @@ namespace gltoolbox
 
     inline bool is_valid() const { return glIsShader(mId) != 0; }
 
-    inline bool is_compile() const { return get_parameter(GL_COMPILE_STATUS) != 0; }
+    inline bool compile_status() const { return get_parameter(GL_COMPILE_STATUS) != 0; }
 
-    inline bool is_delete() const { return get_parameter(GL_DELETE_STATUS) != 0; }
+    inline bool delete_status() const { return get_parameter(GL_DELETE_STATUS) != 0; }
 
     inline GLenum type() const { return GLenum(get_parameter(GL_SHADER_TYPE)); }
     std::string type_as_str() const;
