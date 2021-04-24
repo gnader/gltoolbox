@@ -36,7 +36,10 @@ namespace gltoolbox
   class Shader
   {
   public:
-    Shader(GLenum type = GL_FRAGMENT_SHADER);
+    static Shader from_file(const std::string &filename, GLenum type);
+
+  public:
+    Shader(const std::string &src, GLenum type);
 
     Shader(const Shader &other) = delete;
     Shader(Shader &&temp);
@@ -46,21 +49,16 @@ namespace gltoolbox
     Shader &operator=(const Shader &other) = delete;
     Shader &operator==(Shader &temp);
 
-    void set_source(const std::string &src) const;
-    void set_source_from_file(const std::string &filename) const;
-
-    bool compile() const;
-
     inline GLuint id() const { return mId; }
-
     inline bool is_valid() const { return glIsShader(mId) != 0; }
-
-    inline bool compile_status() const { return get_parameter(GL_COMPILE_STATUS) != 0; }
-
-    inline bool delete_status() const { return get_parameter(GL_DELETE_STATUS) != 0; }
 
     inline GLenum type() const { return GLenum(get_parameter(GL_SHADER_TYPE)); }
     std::string type_as_str() const;
+
+    bool compile() const;
+    inline bool compile_status() const { return get_parameter(GL_COMPILE_STATUS) != 0; }
+
+    inline bool delete_status() const { return get_parameter(GL_DELETE_STATUS) != 0; }
 
     std::string info_log() const;
     inline GLsizei info_log_length() const { return get_parameter(GL_INFO_LOG_LENGTH); }
@@ -69,11 +67,18 @@ namespace gltoolbox
     inline GLsizei source_length() const { return get_parameter(GL_SHADER_SOURCE_LENGTH); }
 
   protected:
+    void set_source(const std::string &src) const;
+    void set_source_file(const std::string &filename);
+
     GLint get_parameter(const GLenum param) const;
 
   protected:
     GLuint mId;
     bool mOwned;
+
+    //meta information
+    std::string mFilename;
+    bool mIsFromFile;
   };
 }
 

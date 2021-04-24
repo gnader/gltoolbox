@@ -29,6 +29,8 @@
 #include <GLFW/glfw3.h>
 #include <gltoolbox/gltoolbox.h>
 
+#define TYPE int
+
 int main(int argc, char **argv)
 {
   if (!glfwInit())
@@ -50,6 +52,10 @@ int main(int argc, char **argv)
 
   std::cout << "OpenGL version: " << gltoolbox::GL::gl_version() << std::endl;
   std::cout << "GLSL version: " << gltoolbox::GL::glsl_version() << std::endl;
+
+  // TYPE test = 0;
+  // gltoolbox::Uniform<TYPE> unif1("test", &test);
+  // unif1.update();
 
   return 0;
 }

@@ -30,5 +30,6 @@
 #include "gl.h"
 
 #include "shader.h"
+#include "uniform.h"
 
 #endif // __GLTOOLBOX_H__

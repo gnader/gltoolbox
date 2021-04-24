@@ -27,39 +27,43 @@
 #ifndef __GLTOOLBOX_PROGRAM_H__
 #define __GLTOOLBOX_PROGRAM_H__
 
+#include "shader.h"
+
 #include <unordered_set>
 
 namespace gltoolbox
 {
-  //forward declaration
-  class Shader;
-
   class Program
   {
   public:
     Program();
+
+    Program(const Program &other) = delete;
+    Program(Program &&temp);
+
     virtual ~Program();
 
-    inline unsigned int id() const { return mId; }
-    inline bool is_valid() const { return mId != 0; }
+    Program &operator=(const Program &other) = delete;
+    Program &operator==(Program &temp);
 
-    void attach_shader(Shader *s);
-    void detach_shader(Shader *s);
+    inline GLuint id() const { return mId; }
+    inline bool is_valid() const { return mId != 0; }
+    bool delete_status() const;
+
+    void use() const;
+    void unuse() const;
+
+    void attach_shader();
+    void detach_shader();
 
     bool link() const;
-    bool is_linked() const;
+    bool link_status() const;
 
-    void activate() const;
-    void desactivate() const;
-
-    int getAttributeLocation(const char *name) const;
-    int getUniformLocation(const char *name) const;
-
-    void print_info_log() const;
+    std::string info_log() const;
 
   protected:
-    unsigned int mId;
-    std::unordered_set<Shader *> mShaders;
+    GLuint mId;
+    bool mOwned;
   };
 }
 

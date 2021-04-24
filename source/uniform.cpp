@@ -47,6 +47,7 @@ BaseUniform::BaseUniform(Program *prog, GLint location, const std::string &name)
 
 BaseUniform::~BaseUniform()
 {
+  mProg = nullptr;
 }
 
 // glProgramUniform1{i|ui|f|d}v

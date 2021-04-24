@@ -41,14 +41,16 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 set(source
     ${PROJECT_SOURCE_DIR}/source/buffer.cpp
     ${PROJECT_SOURCE_DIR}/source/program.cpp
-    ${PROJECT_SOURCE_DIR}/source/shader.cpp)
+    ${PROJECT_SOURCE_DIR}/source/shader.cpp
+    ${PROJECT_SOURCE_DIR}/source/uniform.cpp)
 
 set(header
     ${PROJECT_SOURCE_DIR}/include/gltoolbox/gl.h
     ${PROJECT_SOURCE_DIR}/include/gltoolbox/gltoolbox.h
     ${PROJECT_SOURCE_DIR}/include/gltoolbox/buffer.h
     ${PROJECT_SOURCE_DIR}/include/gltoolbox/program.h
-    ${PROJECT_SOURCE_DIR}/include/gltoolbox/shader.h)
+    ${PROJECT_SOURCE_DIR}/include/gltoolbox/shader.h
+    ${PROJECT_SOURCE_DIR}/include/gltoolbox/uniform.h)
 
 ## GLTOOLBOX
 #--------------------------------------------------------------------

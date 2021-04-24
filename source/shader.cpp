@@ -29,10 +29,22 @@ using namespace gltoolbox;
 
 #include <fstream>
 
-Shader::Shader(GLenum type)
-    : mId(0), mOwned(true)
+Shader Shader::from_file(const std::string &filename, GLenum type)
+{
+  std::ifstream stream(filename);
+  std::string src = std::string(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>());
+
+  Shader shader(src, type);
+  shader.set_source_file(filename);
+
+  return shader;
+}
+
+Shader::Shader(const std::string &src, GLenum type)
+    : mId(0), mOwned(true), mFilename(""), mIsFromFile(false)
 {
   mId = glCreateShader(type);
+  set_source(src);
 }
 
 Shader::Shader(Shader &&temp)
@@ -61,24 +73,12 @@ Shader &Shader::operator==(Shader &temp)
   return *this;
 }
 
-void Shader::set_source(const std::string &src) const
-{
-  const GLchar *_src = src.c_str();
-  glShaderSource(mId, 1, (const GLchar **)&_src, 0);
-}
-
-void Shader::set_source_from_file(const std::string &filename) const
-{
-  std::ifstream stream(filename);
-  set_source(std::string(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>()));
-}
-
 bool Shader::compile() const
 {
   if (is_valid())
     glCompileShader(mId);
 
-  return is_compile();
+  return compile_status();
 }
 
 std::string Shader::type_as_str() const
@@ -125,4 +125,23 @@ std::string Shader::source() const
   glGetShaderSource(id(), static_cast<GLsizei>(src.size()), 0, src.data());
 
   return src;
+}
+
+void Shader::set_source(const std::string &src) const
+{
+  const GLchar *_src = src.c_str();
+  glShaderSource(mId, 1, (const GLchar **)&_src, 0);
+}
+
+void Shader::set_source_file(const std::string &filename)
+{
+  mFilename = filename;
+  mIsFromFile = true;
+}
+
+GLint Shader::get_parameter(const GLenum param) const
+{
+  GLint result;
+  glGetShaderiv(id(), param, &result);
+  return result;
 }
