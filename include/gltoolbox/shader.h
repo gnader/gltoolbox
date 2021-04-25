@@ -39,12 +39,13 @@ namespace gltoolbox
     static Shader from_file(const std::string &filename, GLenum type);
 
   public:
+    Shader();
     Shader(const std::string &src, GLenum type);
 
     Shader(const Shader &other) = delete;
     Shader(Shader &&temp);
 
-    virtual ~Shader();
+    virtual ~Shader(); //deletes the program if case
 
     Shader &operator=(const Shader &other) = delete;
     Shader &operator==(Shader &temp);

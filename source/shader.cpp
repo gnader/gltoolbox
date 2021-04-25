@@ -28,6 +28,7 @@
 using namespace gltoolbox;
 
 #include <fstream>
+#include <iostream>
 
 Shader Shader::from_file(const std::string &filename, GLenum type)
 {
@@ -40,17 +41,29 @@ Shader Shader::from_file(const std::string &filename, GLenum type)
   return shader;
 }
 
+Shader::Shader()
+    : mId(0), mOwned(true), mFilename(""), mIsFromFile(false)
+{
+}
+
 Shader::Shader(const std::string &src, GLenum type)
     : mId(0), mOwned(true), mFilename(""), mIsFromFile(false)
 {
   mId = glCreateShader(type);
   set_source(src);
+
+  bool success = compile();
+  if (!success)
+    std::cerr << "[Error] : unable to compile " << type_as_str() << std::endl
+              << "\t" << info_log() << std::endl;
 }
 
 Shader::Shader(Shader &&temp)
 {
   mId = temp.mId;
   mOwned = temp.mOwned;
+  mFilename = temp.mFilename;
+  mIsFromFile = temp.mIsFromFile;
 
   temp.mId = 0;
   temp.mOwned = false;
@@ -59,13 +72,17 @@ Shader::Shader(Shader &&temp)
 Shader::~Shader()
 {
   if (mOwned && is_valid())
+  {
     glDeleteShader(mId);
+  }
 }
 
 Shader &Shader::operator==(Shader &temp)
 {
   mId = temp.mId;
   mOwned = temp.mOwned;
+  mFilename = temp.mFilename;
+  mIsFromFile = temp.mIsFromFile;
 
   temp.mId = 0;
   temp.mOwned = false;
