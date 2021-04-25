@@ -53,9 +53,16 @@ int main(int argc, char **argv)
   std::cout << "OpenGL version: " << gltoolbox::GL::gl_version() << std::endl;
   std::cout << "GLSL version: " << gltoolbox::GL::glsl_version() << std::endl;
 
-  // TYPE test = 0;
-  // gltoolbox::Uniform<TYPE> unif1("test", &test);
-  // unif1.update();
+  gltoolbox::Program prg;
+  prg.attach_shader(std::move(gltoolbox::Shader::from_file("blinn.vert", GL_VERTEX_SHADER)));
+  prg.attach_shader(std::move(gltoolbox::Shader::from_file("blinn.frag", GL_FRAGMENT_SHADER)));
+  prg.link();
+
+  std::cout << prg.num_active_uniforms() << std::endl;
+
+  float radius = 12.;
+  prg.add_uniform<float>("picking_radius", &radius);
+  prg.update_uniform();
 
   return 0;
 }

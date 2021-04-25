@@ -63,7 +63,8 @@ void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, unsigned int 
 
 void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, float *data) const
 {
-  glProgramUniform1fv(prog, loc, cnt, data);
+  // glProgramUniform1fv(prog, loc, cnt, data);
+  std::cout << *data << std::endl;
 }
 
 void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, double *data) const

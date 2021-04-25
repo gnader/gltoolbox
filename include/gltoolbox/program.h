@@ -28,6 +28,7 @@
 #define __GLTOOLBOX_PROGRAM_H__
 
 #include "shader.h"
+#include "uniform.h"
 
 #include <unordered_map>
 
@@ -55,32 +56,53 @@ namespace gltoolbox
     inline void use() const { glUseProgram(mId); }
     void unuse() const { glUseProgram(0); }
 
+    inline GLint num_attached_shader() const { return get_parameter(GL_ATTACHED_SHADERS); }
+    inline const Shader &get_shader(GLenum type) const { return mShaderList.at(type); }
+
     void attach_shader(Shader &shader);
     void attach_shader(Shader &&temp);
-    void attach_shader(const std::string &src, GLenum type);
 
     void detach_shader(GLenum type);
 
-    inline const Shader &get_shader(GLenum type) const { return mShaders.at(type); }
+    inline GLint num_active_attributes() const { return get_parameter(GL_ACTIVE_ATTRIBUTES); }
 
-    inline GLint num_attached_shader() { return get_parameter(GL_ATTACHED_SHADERS); }
+    inline GLint num_active_uniforms() const { return get_parameter(GL_ACTIVE_UNIFORMS); }
 
-    inline GLint num_active_attributes() { return get_parameter(GL_ACTIVE_ATTRIBUTES); }
+    template <typename T>
+    bool add_uniform(const std::string &name, T *ptr, GLsizei count = 1)
+    {
+      GLint loc = glGetUniformLocation(id(), name.c_str());
+      if (loc > 0)
+      {
+        auto search = mUniformList.find(name);
+        if (search != mUniformList.end())
+          search->second.reset();
+        mUniformList[name] = std::make_unique<Uniform<T>>(this, loc, ptr, count);
+        return true;
+      }
+      return false;
+    }
 
-    inline GLint num_active_uniforms() { return get_parameter(GL_ACTIVE_UNIFORMS); }
+    void update_uniform() const;
+    void update_uniform(const std::string &name) const;
+
+    void remove_uniform(const std::string &name);
 
     std::string info_log() const;
     inline GLsizei info_log_length() const { return get_parameter(GL_INFO_LOG_LENGTH); }
 
   protected:
+    void delete_program();
+    void delete_uniforms();
+
     GLint get_parameter(const GLenum param) const;
 
   protected:
     GLuint mId;
     bool mOwned;
 
-    //shader containers
-    std::unordered_map<GLenum, Shader> mShaders;
+    std::unordered_map<GLenum, Shader> mShaderList;
+    std::unordered_map<std::string, std::unique_ptr<BaseUniform>> mUniformList;
   };
 }
 

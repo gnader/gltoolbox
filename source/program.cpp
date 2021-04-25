@@ -35,8 +35,13 @@ Program::Program()
 
 Program::Program(Program &&temp)
 {
+  delete_program();
+  delete_uniforms();
+
   mId = temp.mId;
   mOwned = temp.mOwned;
+  mShaderList = std::move(temp.mShaderList);
+  mUniformList = std::move(temp.mUniformList);
 
   temp.mId = 0;
   temp.mOwned = false;
@@ -44,8 +49,8 @@ Program::Program(Program &&temp)
 
 Program::~Program()
 {
-  if (mOwned && is_valid())
-    glDeleteProgram(mId);
+  delete_program();
+  delete_uniforms();
 }
 
 bool Program::link() const
@@ -60,42 +65,60 @@ void Program::attach_shader(Shader &shader)
 {
   GLenum type = shader.type();
 
-  // ! If mShaders[type] is already assigned, the shader will be deleted.
+  // ! If mShaderList[type] is already assigned, the shader will be deleted.
   // ! Input shader will be no longer be valid
-  mShaders[type] = shader;
-  glAttachShader(id(), mShaders[type].id());
+  mShaderList[type] = shader;
+  glAttachShader(id(), mShaderList[type].id());
 }
 
 void Program::attach_shader(Shader &&temp)
 {
   GLenum type = temp.type();
 
-  mShaders[type] = temp;
-  glAttachShader(id(), mShaders[type].id());
-}
-
-void Program::attach_shader(const std::string &src, GLenum type)
-{
-  // ! If mShaders[type] is already assigned, the shader will be deleted.
-  // ! Input shader will be no longer be valid
-  Shader shdr(src, type);
-  mShaders[type] = shdr;
-  glAttachShader(id(), mShaders[type].id());
+  mShaderList[type] = temp;
+  glAttachShader(id(), mShaderList[type].id());
 }
 
 void Program::detach_shader(GLenum type)
 {
-  glDetachShader(id(), mShaders.at(type).id());
-  mShaders.erase(type);
+  glDetachShader(id(), mShaderList.at(type).id());
+  mShaderList.erase(type);
 }
 
-std::string Program::info_log() const
+void Program::update_uniform() const
 {
-  std::string log;
-  log.resize(info_log_length());
-  glGetProgramInfoLog(id(), static_cast<GLsizei>(log.size()), 0, log.data());
+  for (const auto &[name, ptr] : mUniformList)
+    ptr.get()->update();
+}
 
-  return log;
+void Program::update_uniform(const std::string &name) const
+{
+  const auto &search = mUniformList.find(name);
+  if (search != mUniformList.end())
+    search->second.get()->update();
+}
+
+void Program::remove_uniform(const std::string &name)
+{
+  auto search = mUniformList.find(name);
+  if (search != mUniformList.end())
+    search->second.reset();
+  mUniformList.erase(name);
+}
+
+void Program::delete_program()
+{
+  if (mOwned && is_valid())
+  {
+    glDeleteProgram(mId);
+    mId = 0;
+  }
+}
+
+void Program::delete_uniforms()
+{
+  for (auto &[name, ptr] : mUniformList)
+    ptr.reset();
 }
 
 GLint Program::get_parameter(const GLenum param) const

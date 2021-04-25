@@ -74,7 +74,7 @@ namespace gltoolbox
     void update_value(GLint prog, GLint loc, GLsizei cnt, std::array<float, 4> *data) const;
     void update_value(GLint prog, GLint loc, GLsizei cnt, std::array<double, 4> *data) const;
 
-#ifdef GL_ENABLE_EIGEN
+#ifdef GLTOOLBOX_ENABLE_EIGEN
     // glProgramUniform2{i|ui|f|d}
     void update_value(GLint prog, GLint loc, GLsizei cnt, Eigen::Vector2i *data) const;
     // void update_value(GLint prog, GLint loc, GLsizei cnt, std::array<unsigned int, 2> *data) const;
