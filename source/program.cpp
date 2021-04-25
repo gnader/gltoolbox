@@ -45,125 +45,62 @@ Program::Program(Program &&temp)
 Program::~Program()
 {
   if (mOwned && is_valid())
-    glDeleteShader(mId);
-}
-
-Program &Program::operator==(Program &temp)
-{
-  mId = temp.mId;
-  mOwned = temp.mOwned;
-
-  temp.mId = 0;
-  temp.mOwned = false;
-
-  return *this;
-}
-
-void Program::attach_shader()
-{
-}
-
-void Program::detach_shader()
-{
+    glDeleteProgram(mId);
 }
 
 bool Program::link() const
 {
-  glLinkProgram(mId);
+  if (is_valid())
+    glLinkProgram(mId);
+
   return link_status();
 }
 
-bool Program::link_status() const
+void Program::attach_shader(Shader &shader)
 {
-  int status = 0;
-  glGetProgramiv(mId, GL_LINK_STATUS, &status);
-  return status;
+  GLenum type = shader.type();
+
+  // ! If mShaders[type] is already assigned, the shader will be deleted.
+  // ! Input shader will be no longer be valid
+  mShaders[type] = shader;
+  glAttachShader(id(), mShaders[type].id());
+}
+
+void Program::attach_shader(Shader &&temp)
+{
+  GLenum type = temp.type();
+
+  mShaders[type] = temp;
+  glAttachShader(id(), mShaders[type].id());
+}
+
+void Program::attach_shader(const std::string &src, GLenum type)
+{
+  // ! If mShaders[type] is already assigned, the shader will be deleted.
+  // ! Input shader will be no longer be valid
+  Shader shdr(src, type);
+  mShaders[type] = shdr;
+  glAttachShader(id(), mShaders[type].id());
+}
+
+void Program::detach_shader(GLenum type)
+{
+  glDetachShader(id(), mShaders.at(type).id());
+  mShaders.erase(type);
 }
 
 std::string Program::info_log() const
 {
   std::string log;
+  log.resize(info_log_length());
+  glGetProgramInfoLog(id(), static_cast<GLsizei>(log.size()), 0, log.data());
+
   return log;
 }
 
-// Program::Program()
-//     : mId(0)
-// {
-//   mId = glCreateProgram();
-// }
-
-// Program::~Program()
-// {
-//   glDeleteProgram(id());
-// }
-
-// void Program::attach_shader(Shader *s)
-// {
-//   if (s == nullptr)
-//     return;
-
-//   if (is_valid())
-//     glAttachShader(id(), s->id());
-
-//   mShaders.insert(s);
-// }
-
-// void Program::detach_shader(Shader *s)
-// {
-//   if (s == nullptr)
-//     return;
-
-//   if (is_valid())
-//     glDetachShader(id(), s->id());
-
-//   mShaders.erase(s);
-// }
-
-// bool Program::link() const
-// {
-//   glLinkProgram(id());
-//   bool status = is_linked();
-//   if (!status)
-//     print_info_log();
-//   return status;
-// }
-
-// bool Program::is_linked() const
-// {
-//   int status = 0;
-//   if (is_valid())
-//     glGetProgramiv(id(), GL_LINK_STATUS, &status);
-//   return status;
-// }
-
-// void Program::activate() const
-// {
-//   glUseProgram(id());
-// }
-
-// void Program::desactivate() const
-// {
-//   glUseProgram(0);
-// }
-
-// int Program::getAttributeLocation(const char *name) const
-// {
-//   return glGetAttribLocation(id(), name);
-// }
-
-// int Program::getUniformLocation(const char *name) const
-// {
-//   return glGetUniformLocation(id(), name);
-// }
-
-// void Program::print_info_log() const
-// {
-//   int length = 0;
-//   glGetProgramiv(id(), GL_INFO_LOG_LENGTH, &length);
-
-//   if (length > 0)
-//   {
-//     std::vector<char> log(length);
-//     glGetProgramInfoLog(id(), length, &length, log.data());
-//   }
-// }
+GLint Program::get_parameter(const GLenum param) const
+{
+  GLint value;
+  glGetProgramiv(id(), param, &value);
+  return value;
+}

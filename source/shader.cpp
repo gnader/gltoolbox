@@ -55,11 +55,13 @@ Shader::Shader(const std::string &src, GLenum type)
   bool success = compile();
   if (!success)
     std::cerr << "[Error] : unable to compile " << type_as_str() << std::endl
-              << "\t" << info_log() << std::endl;
+              << info_log() << std::endl;
 }
 
 Shader::Shader(Shader &&temp)
 {
+  delete_shader();
+
   mId = temp.mId;
   mOwned = temp.mOwned;
   mFilename = temp.mFilename;
@@ -71,21 +73,20 @@ Shader::Shader(Shader &&temp)
 
 Shader::~Shader()
 {
-  if (mOwned && is_valid())
-  {
-    glDeleteShader(mId);
-  }
+  delete_shader();
 }
 
-Shader &Shader::operator==(Shader &temp)
+Shader &Shader::operator=(Shader &other)
 {
-  mId = temp.mId;
-  mOwned = temp.mOwned;
-  mFilename = temp.mFilename;
-  mIsFromFile = temp.mIsFromFile;
+  delete_shader();
 
-  temp.mId = 0;
-  temp.mOwned = false;
+  mId = other.mId;
+  mOwned = other.mOwned;
+  mFilename = other.mFilename;
+  mIsFromFile = other.mIsFromFile;
+
+  other.mId = 0;
+  other.mOwned = false;
 
   return *this;
 }
@@ -142,6 +143,17 @@ std::string Shader::source() const
   glGetShaderSource(id(), static_cast<GLsizei>(src.size()), 0, src.data());
 
   return src;
+}
+
+void Shader::delete_shader()
+{
+  if (mOwned && is_valid())
+  {
+    std::cout << "deleting shader " << mId << std::endl;
+
+    glDeleteShader(mId);
+    mId = 0;
+  }
 }
 
 void Shader::set_source(const std::string &src) const

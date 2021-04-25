@@ -29,7 +29,7 @@
 
 #include "shader.h"
 
-#include <unordered_set>
+#include <unordered_map>
 
 namespace gltoolbox
 {
@@ -44,26 +44,43 @@ namespace gltoolbox
     virtual ~Program();
 
     Program &operator=(const Program &other) = delete;
-    Program &operator==(Program &temp);
 
     inline GLuint id() const { return mId; }
-    inline bool is_valid() const { return mId != 0; }
-    bool delete_status() const;
-
-    void use() const;
-    void unuse() const;
-
-    void attach_shader();
-    void detach_shader();
+    inline bool is_valid() const { return glIsProgram(mId) != 0; }
 
     bool link() const;
-    bool link_status() const;
+    inline bool link_status() const { return get_parameter(GL_LINK_STATUS) != 0; }
+    inline bool delete_status() const { return get_parameter(GL_DELETE_STATUS) != 0; }
+
+    inline void use() const { glUseProgram(mId); }
+    void unuse() const { glUseProgram(0); }
+
+    void attach_shader(Shader &shader);
+    void attach_shader(Shader &&temp);
+    void attach_shader(const std::string &src, GLenum type);
+
+    void detach_shader(GLenum type);
+
+    inline const Shader &get_shader(GLenum type) const { return mShaders.at(type); }
+
+    inline GLint num_attached_shader() { return get_parameter(GL_ATTACHED_SHADERS); }
+
+    inline GLint num_active_attributes() { return get_parameter(GL_ACTIVE_ATTRIBUTES); }
+
+    inline GLint num_active_uniforms() { return get_parameter(GL_ACTIVE_UNIFORMS); }
 
     std::string info_log() const;
+    inline GLsizei info_log_length() const { return get_parameter(GL_INFO_LOG_LENGTH); }
+
+  protected:
+    GLint get_parameter(const GLenum param) const;
 
   protected:
     GLuint mId;
     bool mOwned;
+
+    //shader containers
+    std::unordered_map<GLenum, Shader> mShaders;
   };
 }
 

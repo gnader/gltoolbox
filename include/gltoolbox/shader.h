@@ -45,10 +45,10 @@ namespace gltoolbox
     Shader(const Shader &other) = delete;
     Shader(Shader &&temp);
 
-    virtual ~Shader(); //deletes the program if case
+    virtual ~Shader();
 
     Shader &operator=(const Shader &other) = delete;
-    Shader &operator==(Shader &temp);
+    Shader &operator=(Shader &other);
 
     inline GLuint id() const { return mId; }
     inline bool is_valid() const { return glIsShader(mId) != 0; }
@@ -68,6 +68,8 @@ namespace gltoolbox
     inline GLsizei source_length() const { return get_parameter(GL_SHADER_SOURCE_LENGTH); }
 
   protected:
+    void delete_shader();
+
     void set_source(const std::string &src) const;
     void set_source_file(const std::string &filename);
 
