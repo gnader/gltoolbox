@@ -32,6 +32,15 @@ if(GLBINDING_FOUND)
   message("${GLBINDING_LIBRARIES}")
 endif()
 
+# eigen
+find_package(Eigen3)
+if(EIGEN3_FOUND)
+  include_directories(${EIGEN3_INCLUDE_DIR})
+  add_definitions(-DGLTOOLBOX_ENABLE_EIGEN)
+  message("eigen:")
+  message("${EIGEN3_INCLUDE_DIR}")
+endif()
+
 ## INCLUDES
 #--------------------------------------------------------------------
 include_directories(${PROJECT_SOURCE_DIR}/include)

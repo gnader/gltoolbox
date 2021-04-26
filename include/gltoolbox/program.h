@@ -85,6 +85,13 @@ namespace gltoolbox
 
     void update_uniform() const;
     void update_uniform(const std::string &name) const;
+    template <typename T>
+    void update_uniform(const std::string &name, T *ptr, GLsizei count = 1)
+    {
+      const auto &search = mUniformList.find(name);
+      if (search != mUniformList.end())
+        dynamic_cast<Uniform<T> *>(search->second.get())->update(ptr, count);
+    }
 
     void remove_uniform(const std::string &name);
 

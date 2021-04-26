@@ -28,8 +28,6 @@
 #include <gltoolbox/program.h>
 using namespace gltoolbox;
 
-#include <iostream>
-
 BaseUniform::BaseUniform(Program *prog, GLint location)
     : mProg(prog), mLocation(location), mName("")
 {
@@ -51,86 +49,226 @@ BaseUniform::~BaseUniform()
 }
 
 // glProgramUniform1{i|ui|f|d}v
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, int *data) const
+void BaseUniform::update_value(GLsizei cnt, int *data) const
 {
-  glProgramUniform1iv(prog, loc, cnt, data);
+  glProgramUniform1iv(mProg->id(), mLocation, cnt, data);
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, unsigned int *data) const
+void BaseUniform::update_value(GLsizei cnt, unsigned int *data) const
 {
-  glProgramUniform1uiv(prog, loc, cnt, data);
+  glProgramUniform1uiv(mProg->id(), mLocation, cnt, data);
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, float *data) const
+void BaseUniform::update_value(GLsizei cnt, float *data) const
 {
-  // glProgramUniform1fv(prog, loc, cnt, data);
-  std::cout << *data << std::endl;
+  glProgramUniform1fv(mProg->id(), mLocation, cnt, data);
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, double *data) const
+void BaseUniform::update_value(GLsizei cnt, double *data) const
 {
-  glProgramUniform1dv(prog, loc, cnt, data);
+  glProgramUniform1dv(mProg->id(), mLocation, cnt, data);
 }
 
 // glProgramUniform2{i|ui|f|d}v
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<int, 2> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<int, 2> *data) const
 {
-  glProgramUniform2iv(prog, loc, cnt, data->data());
+  glProgramUniform2iv(mProg->id(), mLocation, cnt, data->data());
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<unsigned int, 2> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<unsigned int, 2> *data) const
 {
-  glProgramUniform2uiv(prog, loc, cnt, data->data());
+  glProgramUniform2uiv(mProg->id(), mLocation, cnt, data->data());
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<float, 2> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<float, 2> *data) const
 {
-  glProgramUniform2fv(prog, loc, cnt, data->data());
+  glProgramUniform2fv(mProg->id(), mLocation, cnt, data->data());
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<double, 2> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<double, 2> *data) const
 {
-  glProgramUniform2dv(prog, loc, cnt, data->data());
+  glProgramUniform2dv(mProg->id(), mLocation, cnt, data->data());
 }
 
 // glProgramUniform3{i|ui|f|d}v
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<int, 3> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<int, 3> *data) const
 {
-  glProgramUniform3iv(prog, loc, cnt, data->data());
+  glProgramUniform3iv(mProg->id(), mLocation, cnt, data->data());
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<unsigned int, 3> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<unsigned int, 3> *data) const
 {
-  glProgramUniform3uiv(prog, loc, cnt, data->data());
+  glProgramUniform3uiv(mProg->id(), mLocation, cnt, data->data());
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<float, 3> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<float, 3> *data) const
 {
-  glProgramUniform3fv(prog, loc, cnt, data->data());
+  glProgramUniform3fv(mProg->id(), mLocation, cnt, data->data());
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<double, 3> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<double, 3> *data) const
 {
-  glProgramUniform3dv(prog, loc, cnt, data->data());
+  glProgramUniform3dv(mProg->id(), mLocation, cnt, data->data());
 }
 
 // glProgramUniform4{i|ui|f|d}v
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<int, 4> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<int, 4> *data) const
 {
-  glProgramUniform4iv(prog, loc, cnt, data->data());
+  glProgramUniform4iv(mProg->id(), mLocation, cnt, data->data());
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<unsigned int, 4> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<unsigned int, 4> *data) const
 {
-  glProgramUniform4uiv(prog, loc, cnt, data->data());
+  glProgramUniform4uiv(mProg->id(), mLocation, cnt, data->data());
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<float, 4> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<float, 4> *data) const
 {
-  glProgramUniform4fv(prog, loc, cnt, data->data());
+  glProgramUniform4fv(mProg->id(), mLocation, cnt, data->data());
 }
 
-void BaseUniform::update_value(GLint prog, GLint loc, GLsizei cnt, std::array<double, 4> *data) const
+void BaseUniform::update_value(GLsizei cnt, std::array<double, 4> *data) const
 {
-  glProgramUniform4dv(prog, loc, cnt, data->data());
+  glProgramUniform4dv(mProg->id(), mLocation, cnt, data->data());
 }
+
+#ifdef GLTOOLBOX_ENABLE_EIGEN
+
+// glProgramUniform2{i|ui|f|d}
+void BaseUniform::update_value(GLsizei cnt, Eigen::Vector2i *data) const
+{
+  glProgramUniform2iv(mProg->id(), mLocation, cnt, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Vector2f *data) const
+{
+  glProgramUniform2fv(mProg->id(), mLocation, cnt, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Vector2d *data) const
+{
+  glProgramUniform2dv(mProg->id(), mLocation, cnt, data->data());
+}
+
+// glProgramUniform3{i|ui|f|d}
+void BaseUniform::update_value(GLsizei cnt, Eigen::Vector3i *data) const
+{
+  glProgramUniform3iv(mProg->id(), mLocation, cnt, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Vector3f *data) const
+{
+  glProgramUniform3fv(mProg->id(), mLocation, cnt, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Vector3d *data) const
+{
+  glProgramUniform3dv(mProg->id(), mLocation, cnt, data->data());
+}
+
+// glProgramUniform4{i|ui|f|d}
+void BaseUniform::update_value(GLsizei cnt, Eigen::Vector4i *data) const
+{
+  glProgramUniform4iv(mProg->id(), mLocation, cnt, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Vector4f *data) const
+{
+  glProgramUniform4fv(mProg->id(), mLocation, cnt, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Vector4d *data) const
+{
+  glProgramUniform4dv(mProg->id(), mLocation, cnt, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix2f *data) const
+{
+  glProgramUniformMatrix2fv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix2d *data) const
+{
+  glProgramUniformMatrix2dv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix3f *data) const
+{
+  glProgramUniformMatrix3fv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix3d *data) const
+{
+  glProgramUniformMatrix3dv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix4f *data) const
+{
+  glProgramUniformMatrix4fv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix4d *data) const
+{
+  glProgramUniformMatrix4dv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<float, 3, 2> *data) const
+{
+  glProgramUniformMatrix2x3fv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<double, 3, 2> *data) const
+{
+  glProgramUniformMatrix2x3dv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<float, 2, 3> *data) const
+{
+  glProgramUniformMatrix3x2fv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<double, 2, 3> *data) const
+{
+  glProgramUniformMatrix3x2dv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<float, 4, 2> *data) const
+{
+  glProgramUniformMatrix2x4fv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<double, 4, 2> *data) const
+{
+  glProgramUniformMatrix2x4dv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<float, 2, 4> *data) const
+{
+  glProgramUniformMatrix4x2fv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<double, 2, 4> *data) const
+{
+  glProgramUniformMatrix4x2dv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<float, 4, 3> *data) const
+{
+  glProgramUniformMatrix3x4fv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<double, 4, 3> *data) const
+{
+  glProgramUniformMatrix3x4dv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<float, 3, 4> *data) const
+{
+  glProgramUniformMatrix4x3fv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+
+void BaseUniform::update_value(GLsizei cnt, Eigen::Matrix<double, 3, 4> *data) const
+{
+  glProgramUniformMatrix4x3dv(mProg->id(), mLocation, cnt, GL_FALSE, data->data());
+}
+#endif

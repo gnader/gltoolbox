@@ -106,6 +106,15 @@ void Program::remove_uniform(const std::string &name)
   mUniformList.erase(name);
 }
 
+std::string Program::info_log() const
+{
+  std::string log;
+  log.resize(info_log_length());
+  glGetProgramInfoLog(id(), static_cast<GLsizei>(log.size()), 0, log.data());
+
+  return log;
+}
+
 void Program::delete_program()
 {
   if (mOwned && is_valid())

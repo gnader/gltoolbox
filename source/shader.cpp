@@ -149,8 +149,6 @@ void Shader::delete_shader()
 {
   if (mOwned && is_valid())
   {
-    std::cout << "deleting shader " << mId << std::endl;
-
     glDeleteShader(mId);
     mId = 0;
   }

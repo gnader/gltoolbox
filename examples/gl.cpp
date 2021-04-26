@@ -60,8 +60,13 @@ int main(int argc, char **argv)
 
   std::cout << prg.num_active_uniforms() << std::endl;
 
-  float radius = 12.;
-  prg.add_uniform<float>("picking_radius", &radius);
+  std::weak_ptr<float> wp;
+
+  float r1 = 12.;
+  float r2 = 256.;
+  prg.add_uniform<float>("picking_radius", &r1);
+  prg.update_uniform();
+  prg.update_uniform<float>("picking_radius", &r2);
   prg.update_uniform();
 
   return 0;
