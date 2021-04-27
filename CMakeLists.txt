@@ -47,19 +47,24 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 ## FILES
 #--------------------------------------------------------------------
+set(CPP_FOLDER ${PROJECT_SOURCE_DIR}/source)
+set(H_FOLDER ${PROJECT_SOURCE_DIR}/include/gltoolbox)
+
 set(source
-    ${PROJECT_SOURCE_DIR}/source/buffer.cpp
-    ${PROJECT_SOURCE_DIR}/source/program.cpp
-    ${PROJECT_SOURCE_DIR}/source/shader.cpp
-    ${PROJECT_SOURCE_DIR}/source/uniform.cpp)
+    ${CPP_FOLDER}/buffer.cpp
+    ${CPP_FOLDER}/program.cpp
+    ${CPP_FOLDER}/shader.cpp
+    ${CPP_FOLDER}/uniform.cpp
+    ${CPP_FOLDER}/vertexattrib.cpp)
 
 set(header
-    ${PROJECT_SOURCE_DIR}/include/gltoolbox/gl.h
-    ${PROJECT_SOURCE_DIR}/include/gltoolbox/gltoolbox.h
-    ${PROJECT_SOURCE_DIR}/include/gltoolbox/buffer.h
-    ${PROJECT_SOURCE_DIR}/include/gltoolbox/program.h
-    ${PROJECT_SOURCE_DIR}/include/gltoolbox/shader.h
-    ${PROJECT_SOURCE_DIR}/include/gltoolbox/uniform.h)
+    ${H_FOLDER}/gl.h
+    ${H_FOLDER}/gltoolbox.h
+    ${H_FOLDER}/buffer.h
+    ${H_FOLDER}/program.h
+    ${H_FOLDER}/shader.h
+    ${H_FOLDER}/uniform.h
+    ${H_FOLDER}/vertexattrib.h)
 
 ## GLTOOLBOX
 #--------------------------------------------------------------------
