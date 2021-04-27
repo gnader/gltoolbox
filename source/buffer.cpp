@@ -27,3 +27,96 @@
 #include <gltoolbox/buffer.h>
 
 using namespace gltoolbox;
+
+Buffer::Buffer(GLenum target)
+    : mId(0), mOwned(true), mTarget(target), mData(nullptr), mSize(-1)
+{
+  glCreateBuffers(1, &mId);
+}
+
+Buffer::Buffer(GLenum target, GLvoid *data, GLsizei size, GLenum usage)
+    : mId(0), mOwned(true), mTarget(target), mData(data), mSize(size)
+{
+  glCreateBuffers(1, &mId);
+  update(usage);
+}
+
+Buffer::Buffer(Buffer &&temp)
+{
+  //delete what ever was there
+  delete_buffer();
+
+  mId = temp.mId;
+  mOwned = temp.mOwned;
+  mTarget = temp.mTarget;
+  mData = temp.mData;
+  mSize = temp.mSize;
+
+  temp.mId = 0;
+  temp.mOwned = false;
+  temp.mData = nullptr;
+  temp.mSize = -1;
+}
+
+Buffer::~Buffer()
+{
+  delete_buffer();
+}
+
+Buffer &Buffer::operator=(Buffer &other)
+{
+  //delete whatever was there
+  delete_buffer();
+
+  mId = other.mId;
+  mOwned = other.mOwned;
+  mTarget = other.mTarget;
+  mData = other.mData;
+  mSize = other.mSize;
+
+  other.mId = 0;
+  other.mOwned = false;
+  other.mData = nullptr;
+  other.mSize = -1;
+
+  return *this;
+}
+
+void Buffer::bind() const
+{
+  glBindBuffer(target(), id());
+}
+
+void Buffer::unbind() const
+{
+  glBindBuffer(target(), 0);
+}
+
+void Buffer::set_data(GLvoid *data, GLsizei size, GLenum usage)
+{
+  mData = data;
+  mSize = size;
+  update(usage);
+}
+
+void Buffer::update(GLenum usage) const
+{
+  glBufferData(target(), mSize, mData, usage);
+}
+
+void Buffer::update_subdata(GLintptr offset, GLsizei size) const
+{
+  glBufferSubData(target(), offset, size, mData);
+}
+
+void Buffer::delete_buffer()
+{
+  if (mOwned && is_valid())
+  {
+    glDeleteBuffers(1, &mId);
+    mId = 0;
+  }
+
+  mData = nullptr;
+  mSize = -1;
+}
