@@ -32,13 +32,14 @@ Buffer::Buffer(GLenum target)
     : mId(0), mOwned(true), mTarget(target), mData(nullptr), mSize(-1)
 {
   glCreateBuffers(1, &mId);
+  bind(); // this will actually trigger the buffer creation
 }
 
 Buffer::Buffer(GLenum target, GLvoid *data, GLsizei size, GLenum usage)
     : mId(0), mOwned(true), mTarget(target), mData(data), mSize(size)
 {
   glCreateBuffers(1, &mId);
-  update(usage);
+  update(usage); // update will call bind() and buffer will be created
 }
 
 Buffer::Buffer(Buffer &&temp)
@@ -82,16 +83,6 @@ Buffer &Buffer::operator=(Buffer &other)
   return *this;
 }
 
-void Buffer::bind() const
-{
-  glBindBuffer(target(), id());
-}
-
-void Buffer::unbind() const
-{
-  glBindBuffer(target(), 0);
-}
-
 void Buffer::set_data(GLvoid *data, GLsizei size, GLenum usage)
 {
   mData = data;
@@ -101,11 +92,13 @@ void Buffer::set_data(GLvoid *data, GLsizei size, GLenum usage)
 
 void Buffer::update(GLenum usage) const
 {
+  bind();
   glBufferData(target(), mSize, mData, usage);
 }
 
 void Buffer::update_subdata(GLintptr offset, GLsizei size) const
 {
+  bind();
   glBufferSubData(target(), offset, size, mData);
 }
 
@@ -119,4 +112,12 @@ void Buffer::delete_buffer()
 
   mData = nullptr;
   mSize = -1;
+}
+
+GLint Buffer::get_parameter(const GLenum param) const
+{
+  GLint result;
+  bind();
+  glGetBufferParameteriv(target(), param, &result);
+  return result;
 }
