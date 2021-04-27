@@ -24,55 +24,15 @@
   * SOFTWARE.
   */
 
-#ifndef __GLTOOLBOX_BUFFER_H__
-#define __GLTOOLBOX_BUFFER_H__
+#ifndef __GLTOOLBOX_VERTEXATTRIB_H__
+#define __GLTOOLBOX_VERTEXATTRIB_H__
 
 #include "gl.h"
 
 namespace gltoolbox
 {
-
-  class Buffer
+  class VertexAttribute
   {
-  public:
-    Buffer(GLenum target);
-    Buffer(GLenum target, GLvoid *data, GLsizei size, GLenum usage = GL_STATIC_DRAW);
-
-    Buffer(const Buffer &other) = delete;
-    Buffer(Buffer &&temp);
-
-    virtual ~Buffer();
-
-    Buffer &operator=(const Buffer &other) = delete;
-    Buffer &operator=(Buffer &other);
-
-    inline GLuint id() const { return mId; }
-    inline bool is_valid() const { return glIsBuffer(mId) != 0; }
-
-    inline GLenum target() const { return mTarget; }
-    inline GLenum usage() const { return GLenum(get_parameter(GL_BUFFER_USAGE)); }
-
-    inline void bind() const { glBindBuffer(mTarget, mId); }
-    inline void unbind() const { glBindBuffer(mTarget, 0); }
-
-    void set_data(GLvoid *data, GLsizei size, GLenum usage = GL_STATIC_DRAW);
-
-    void update(GLenum usage = GL_STATIC_DRAW) const;
-    void update_subdata(GLintptr offset, GLsizei size) const;
-
-  protected:
-    void delete_buffer();
-
-    GLint get_parameter(const GLenum param) const;
-
-  protected:
-    GLuint mId;
-    bool mOwned;
-
-    GLenum mTarget;
-
-    GLvoid *mData; //points to the CPU data
-    GLsizei mSize;
   };
 }
 

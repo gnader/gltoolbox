@@ -27,6 +27,7 @@
 #ifndef __GLTOOLBOX_PROGRAM_H__
 #define __GLTOOLBOX_PROGRAM_H__
 
+#include "buffer.h"
 #include "shader.h"
 #include "uniform.h"
 
@@ -56,6 +57,10 @@ namespace gltoolbox
     inline void use() const { glUseProgram(mId); }
     void unuse() const { glUseProgram(0); }
 
+    //============================
+    // Shaders
+    //============================
+
     inline GLint num_attached_shader() const { return get_parameter(GL_ATTACHED_SHADERS); }
     inline const Shader &get_shader(GLenum type) const { return mShaderList.at(type); }
 
@@ -64,7 +69,24 @@ namespace gltoolbox
 
     void detach_shader(GLenum type);
 
+    //============================
+    // Vertex Attributes
+    //============================
+
     inline GLint num_active_attributes() const { return get_parameter(GL_ACTIVE_ATTRIBUTES); }
+
+    void add_attribute(const std::string &name, Buffer *buffer);
+    void remove_attribute(const std::string &name);
+
+    void enable_attribute(); // enables all attributes
+    void enable_attribute(const std::string &name);
+
+    void disable_attribute(); // disables all attributes
+    void disable_attribute(const std::string &name);
+
+    //============================
+    // Uniforms
+    //============================
 
     inline GLint num_active_uniforms() const { return get_parameter(GL_ACTIVE_UNIFORMS); }
 
@@ -94,6 +116,10 @@ namespace gltoolbox
     }
 
     void remove_uniform(const std::string &name);
+
+    //============================
+    // Program Info
+    //============================
 
     std::string info_log() const;
     inline GLsizei info_log_length() const { return get_parameter(GL_INFO_LOG_LENGTH); }

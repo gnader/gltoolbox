@@ -29,6 +29,7 @@
 
 #include "gl.h"
 
+#include "buffer.h"
 #include "program.h"
 #include "shader.h"
 #include "uniform.h"
