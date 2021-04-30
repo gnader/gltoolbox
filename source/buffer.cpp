@@ -28,93 +28,81 @@
 
 using namespace gltoolbox;
 
-Buffer::Buffer(GLenum target)
-    : mId(0), mOwned(true), mTarget(target), mData(nullptr), mSize(-1)
+BaseBuffer::BaseBuffer(GLenum target)
+    : mId(0), mOwned(true), mTarget(target)
 {
   glCreateBuffers(1, &mId);
   bind(); // this will actually trigger the buffer creation
 }
 
-Buffer::Buffer(GLenum target, GLvoid *data, GLsizei size, GLenum usage)
-    : mId(0), mOwned(true), mTarget(target), mData(data), mSize(size)
-{
-  glCreateBuffers(1, &mId);
-  update(usage); // update will call bind() and buffer will be created
-}
-
-Buffer::Buffer(Buffer &&temp)
-{
-  //delete what ever was there
-  delete_buffer();
-
-  mId = temp.mId;
-  mOwned = temp.mOwned;
-  mTarget = temp.mTarget;
-  mData = temp.mData;
-  mSize = temp.mSize;
-
-  temp.mId = 0;
-  temp.mOwned = false;
-  temp.mData = nullptr;
-  temp.mSize = -1;
-}
-
-Buffer::~Buffer()
-{
-  delete_buffer();
-}
-
-Buffer &Buffer::operator=(Buffer &other)
+BaseBuffer::BaseBuffer(BaseBuffer &&temp)
 {
   //delete whatever was there
   delete_buffer();
 
+  //move buffer ownership
+  mId = temp.mId;
+  mOwned = temp.mOwned;
+  mTarget = temp.mTarget;
+
+  temp.mId = 0;
+  temp.mOwned = false;
+}
+
+BaseBuffer::~BaseBuffer()
+{
+  delete_buffer();
+}
+
+BaseBuffer &BaseBuffer::operator=(BaseBuffer &other)
+{
+  //delete whatever was there
+  delete_buffer();
+
+  //move buffer ownership
   mId = other.mId;
   mOwned = other.mOwned;
   mTarget = other.mTarget;
-  mData = other.mData;
-  mSize = other.mSize;
 
   other.mId = 0;
   other.mOwned = false;
-  other.mData = nullptr;
-  other.mSize = -1;
 
   return *this;
 }
 
-void Buffer::set_data(GLvoid *data, GLsizei size, GLenum usage)
-{
-  mData = data;
-  mSize = size;
-  update(usage);
-}
-
-void Buffer::update(GLenum usage) const
+void BaseBuffer::set_data(GLvoid *data, GLsizei size, GLenum usage) const
 {
   bind();
-  glBufferData(target(), mSize, mData, usage);
+  glBufferData(target(), size, data, usage);
 }
 
-void Buffer::update_subdata(GLintptr offset, GLsizei size) const
+void BaseBuffer::set_subdata(GLvoid *data, GLintptr offset, GLsizei size) const
 {
   bind();
-  glBufferSubData(target(), offset, size, mData);
+  glBufferSubData(target(), offset, size, data);
 }
 
-void Buffer::delete_buffer()
+void BaseBuffer::get_data(GLvoid *data, GLsizei size) const
+{
+  get_subdata(data, 0, size);
+}
+
+void BaseBuffer::get_subdata(GLvoid *data, GLintptr offset, GLsizei size) const
+{
+  bind();
+  glGetBufferSubData(target(), offset, size, data);
+}
+
+void BaseBuffer::delete_buffer()
 {
   if (mOwned && is_valid())
   {
     glDeleteBuffers(1, &mId);
     mId = 0;
   }
-
-  mData = nullptr;
-  mSize = -1;
 }
 
-GLint Buffer::get_parameter(const GLenum param) const
+GLint BaseBuffer::get_parameter(const GLenum param) const
 {
   GLint result;
   bind();

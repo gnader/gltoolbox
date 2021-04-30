@@ -31,20 +31,19 @@
 
 namespace gltoolbox
 {
-
-  class Buffer
+  class BaseBuffer
   {
   public:
-    Buffer(GLenum target);
-    Buffer(GLenum target, GLvoid *data, GLsizei size, GLenum usage = GL_STATIC_DRAW);
+    BaseBuffer(GLenum target);
 
-    Buffer(const Buffer &other) = delete;
-    Buffer(Buffer &&temp);
+    //? copy constructor can just take control of the buffer in other without taking ownership
+    BaseBuffer(const BaseBuffer &other) = delete;
+    BaseBuffer(BaseBuffer &&temp);
 
-    virtual ~Buffer();
+    virtual ~BaseBuffer();
 
-    Buffer &operator=(const Buffer &other) = delete;
-    Buffer &operator=(Buffer &other);
+    BaseBuffer &operator=(const BaseBuffer &other) = delete;
+    BaseBuffer &operator=(BaseBuffer &other);
 
     inline GLuint id() const { return mId; }
     inline bool is_valid() const { return glIsBuffer(mId) != 0; }
@@ -52,13 +51,16 @@ namespace gltoolbox
     inline GLenum target() const { return mTarget; }
     inline GLenum usage() const { return GLenum(get_parameter(GL_BUFFER_USAGE)); }
 
+    inline GLsizei memory_size() const { return get_parameter(GL_BUFFER_SIZE); }
+
     inline void bind() const { glBindBuffer(mTarget, mId); }
     inline void unbind() const { glBindBuffer(mTarget, 0); }
 
-    void set_data(GLvoid *data, GLsizei size, GLenum usage = GL_STATIC_DRAW);
+    void set_data(GLvoid *data, GLsizei size, GLenum usage = GL_STATIC_DRAW) const;
+    void set_subdata(GLvoid *data, GLintptr offset, GLsizei size) const;
 
-    void update(GLenum usage = GL_STATIC_DRAW) const;
-    void update_subdata(GLintptr offset, GLsizei size) const;
+    void get_data(GLvoid *data, GLsizei size) const;
+    void get_subdata(GLvoid *data, GLintptr offset, GLsizei size) const;
 
   protected:
     void delete_buffer();
@@ -70,9 +72,11 @@ namespace gltoolbox
     bool mOwned;
 
     GLenum mTarget;
+  };
 
-    GLvoid *mData; //points to the CPU data
-    GLsizei mSize;
+  template <typename T>
+  class Buffer : public BaseBuffer
+  {
   };
 }
 
