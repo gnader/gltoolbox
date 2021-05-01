@@ -37,14 +37,12 @@ namespace gltoolbox
   public:
     BaseBuffer(GLenum target);
 
-    //? copy constructor can just take control of the buffer in other without taking ownership
     BaseBuffer(const BaseBuffer &other) = delete;
     BaseBuffer(BaseBuffer &&temp);
 
     virtual ~BaseBuffer();
 
     BaseBuffer &operator=(const BaseBuffer &other) = delete;
-    BaseBuffer &operator=(BaseBuffer &other);
 
     //=====================================================
     // Buffer information

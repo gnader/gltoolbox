@@ -76,21 +76,6 @@ Shader::~Shader()
   delete_shader();
 }
 
-Shader &Shader::operator=(Shader &other)
-{
-  delete_shader();
-
-  mId = other.mId;
-  mOwned = other.mOwned;
-  mFilename = other.mFilename;
-  mIsFromFile = other.mIsFromFile;
-
-  other.mId = 0;
-  other.mOwned = false;
-
-  return *this;
-}
-
 bool Shader::compile() const
 {
   if (is_valid())
@@ -147,11 +132,14 @@ std::string Shader::source() const
 
 void Shader::delete_shader()
 {
+  std::cout << "destructor " << mId;
   if (mOwned && is_valid())
   {
+    std::cout << " ... deleting";
     glDeleteShader(mId);
     mId = 0;
   }
+  std::cout << std::endl;
 }
 
 void Shader::set_source(const std::string &src) const

@@ -48,7 +48,6 @@ namespace gltoolbox
     virtual ~Shader();
 
     Shader &operator=(const Shader &other) = delete;
-    Shader &operator=(Shader &other);
 
     inline GLuint id() const { return mId; }
     inline bool is_valid() const { return glIsShader(mId) != 0; }

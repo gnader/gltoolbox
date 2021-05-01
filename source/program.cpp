@@ -61,13 +61,20 @@ bool Program::link() const
   return link_status();
 }
 
+bool Program::has_shader(GLenum type)
+{
+  auto search = mShaderList.find(type);
+  return (search != mShaderList.end());
+}
+
 void Program::attach_shader(Shader &shader)
 {
   GLenum type = shader.type();
 
-  // ! If mShaderList[type] is already assigned, the shader will be deleted.
-  // ! Input shader will be no longer be valid
-  mShaderList[type] = shader;
+  if (has_shader(type))
+    detach_shader(type);
+
+  mShaderList.emplace(type, std::move(shader));
   glAttachShader(id(), mShaderList[type].id());
 }
 
@@ -75,7 +82,10 @@ void Program::attach_shader(Shader &&temp)
 {
   GLenum type = temp.type();
 
-  mShaderList[type] = temp;
+  if (has_shader(type))
+    detach_shader(type);
+
+  mShaderList.emplace(type, std::move(temp));
   glAttachShader(id(), mShaderList[type].id());
 }
 

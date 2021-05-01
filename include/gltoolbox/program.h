@@ -48,20 +48,22 @@ namespace gltoolbox
     Program &operator=(const Program &other) = delete;
 
     inline GLuint id() const { return mId; }
-    inline bool is_valid() const { return glIsProgram(mId) != 0; }
+    inline GLboolean is_valid() const { return glIsProgram(mId) != 0; }
 
     bool link() const;
     inline bool link_status() const { return get_parameter(GL_LINK_STATUS) != 0; }
     inline bool delete_status() const { return get_parameter(GL_DELETE_STATUS) != 0; }
 
     inline void use() const { glUseProgram(mId); }
-    void unuse() const { glUseProgram(0); }
+    inline void unuse() const { glUseProgram(0); }
 
     //============================
     // Shaders
     //============================
 
     inline GLint num_attached_shader() const { return get_parameter(GL_ATTACHED_SHADERS); }
+
+    bool has_shader(GLenum type);
     inline const Shader &get_shader(GLenum type) const { return mShaderList.at(type); }
 
     void attach_shader(Shader &shader);

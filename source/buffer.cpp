@@ -54,22 +54,6 @@ BaseBuffer::~BaseBuffer()
   delete_buffer();
 }
 
-BaseBuffer &BaseBuffer::operator=(BaseBuffer &other)
-{
-  //delete whatever was there
-  delete_buffer();
-
-  //move buffer ownership
-  mId = other.mId;
-  mOwned = other.mOwned;
-  mTarget = other.mTarget;
-
-  other.mId = 0;
-  other.mOwned = false;
-
-  return *this;
-}
-
 void BaseBuffer::delete_buffer()
 {
   if (mOwned && is_valid())
