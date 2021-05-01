@@ -58,16 +58,32 @@ int main(int argc, char **argv)
   prg.attach_shader(std::move(gltoolbox::Shader::from_file("blinn.frag", GL_FRAGMENT_SHADER)));
   prg.link();
 
-  std::cout << prg.num_active_uniforms() << std::endl;
-
-  std::weak_ptr<float> wp;
-
-  float r1 = 12.;
-  float r2 = 256.;
-  prg.add_uniform<float>("picking_radius", &r1);
+  float u1 = 12.;
+  prg.add_uniform<float>("picking_radius", &u1);
   prg.update_uniform();
-  prg.update_uniform<float>("picking_radius", &r2);
-  prg.update_uniform();
+
+  auto display_vector = [](const std::vector<float> &vec) {
+    for (auto x : vec)
+      std::cout << x << " " << std::flush;
+    std::cout << std::endl;
+  };
+
+  std::vector<float> data{1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f};
+  gltoolbox::Buffer<float> b1(GL_ARRAY_BUFFER, data.data(), data.size(), GL_STATIC_DRAW);
+
+  std::cout << b1.element_size() << std::endl;
+  std::cout << b1.num_elements() << std::endl;
+  std::cout << b1.memory_size() << std::endl;
+
+  std::vector<float> gpu_data;
+  gpu_data.resize(7, 0.f);
+
+  display_vector(gpu_data);
+  b1.get(gpu_data);
+  display_vector(gpu_data);
+  display_vector(data);
+
+  std::cout << "done." << std::endl;
 
   return 0;
 }

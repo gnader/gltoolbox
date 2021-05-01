@@ -49,15 +49,8 @@ namespace gltoolbox
     // openGL info
     //=====================================================
 
-    static const GLubyte *gl_version()
-    {
-      return glGetString(GL_VERSION);
-    }
-
-    static const GLubyte *glsl_version()
-    {
-      return glGetString(GL_SHADING_LANGUAGE_VERSION);
-    }
+    static const GLubyte *gl_version() { return glGetString(GL_VERSION); }
+    static const GLubyte *glsl_version() { return glGetString(GL_SHADING_LANGUAGE_VERSION); }
 
     //=====================================================
     // Per-Fragment Operations

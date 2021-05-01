@@ -75,8 +75,8 @@ namespace gltoolbox
     virtual void update(GLenum usage = GL_STATIC_DRAW) const = 0;
     virtual void update(GLsizei offset, GLsizei num) const = 0;
 
-    virtual void get_data() const = 0;
-    virtual void get_subdata(GLsizei offset, GLsizei num) const = 0;
+    virtual void get() const = 0;
+    virtual void get(GLsizei offset, GLsizei num) const = 0;
 
   protected:
     void delete_buffer();
@@ -99,9 +99,10 @@ namespace gltoolbox
     {
     }
 
-    Buffer(GLenum target, T *data, GLsizei num)
+    Buffer(GLenum target, T *data, GLsizei num, GLenum usage = GL_STATIC_DRAW)
         : BaseBuffer(target), mPtr(data), mNum(num)
     {
+      update(usage);
     }
 
     Buffer(const Buffer &other) = delete;
@@ -177,12 +178,12 @@ namespace gltoolbox
     //=====================================================
 
     virtual void
-    get()
+    get() const
     {
       get(0, num_elements());
     }
 
-    virtual void get(GLsizei offset, GLsizei num)
+    virtual void get(GLsizei offset, GLsizei num) const
     {
       bind();
       glGetBufferSubData(target(), offset * element_size(), num * element_size(), mPtr);
@@ -201,7 +202,7 @@ namespace gltoolbox
 
     void get(std::vector<T> &data)
     {
-      get(data.data(), 0, num_elements);
+      get(data.data(), 0, num_elements());
     }
 
     void get(std::vector<T> &data, GLsizei offset, GLsizei num)
