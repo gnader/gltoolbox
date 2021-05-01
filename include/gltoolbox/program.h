@@ -75,7 +75,7 @@ namespace gltoolbox
 
     inline GLint num_active_attributes() const { return get_parameter(GL_ACTIVE_ATTRIBUTES); }
 
-    void add_attribute(const std::string &name, Buffer *buffer);
+    // void add_attribute(const std::string &name, Buffer *buffer);
     void remove_attribute(const std::string &name);
 
     void enable_attribute(); // enables all attributes

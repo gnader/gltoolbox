@@ -28,6 +28,7 @@
 #define __GLTOOLBOX_BUFFER_H__
 
 #include "gl.h"
+#include <vector>
 
 namespace gltoolbox
 {
@@ -45,22 +46,37 @@ namespace gltoolbox
     BaseBuffer &operator=(const BaseBuffer &other) = delete;
     BaseBuffer &operator=(BaseBuffer &other);
 
+    //=====================================================
+    // Buffer information
+    //=====================================================
+
     inline GLuint id() const { return mId; }
     inline bool is_valid() const { return glIsBuffer(mId) != 0; }
 
     inline GLenum target() const { return mTarget; }
     inline GLenum usage() const { return GLenum(get_parameter(GL_BUFFER_USAGE)); }
 
-    inline GLsizei memory_size() const { return get_parameter(GL_BUFFER_SIZE); }
+    //=====================================================
+    // Buffer operations
+    //=====================================================
 
     inline void bind() const { glBindBuffer(mTarget, mId); }
     inline void unbind() const { glBindBuffer(mTarget, 0); }
 
-    void set_data(GLvoid *data, GLsizei size, GLenum usage = GL_STATIC_DRAW) const;
-    void set_subdata(GLvoid *data, GLintptr offset, GLsizei size) const;
+    //======================================================
+    // Buffer content
+    //======================================================
 
-    void get_data(GLvoid *data, GLsizei size) const;
-    void get_subdata(GLvoid *data, GLintptr offset, GLsizei size) const;
+    inline GLsizei memory_size() const { return get_parameter(GL_BUFFER_SIZE); }
+
+    virtual GLsizei element_size() const = 0;
+    virtual GLsizei num_elements() const = 0;
+
+    virtual void update(GLenum usage = GL_STATIC_DRAW) const = 0;
+    virtual void update(GLsizei offset, GLsizei num) const = 0;
+
+    virtual void get_data() const = 0;
+    virtual void get_subdata(GLsizei offset, GLsizei num) const = 0;
 
   protected:
     void delete_buffer();
@@ -77,6 +93,130 @@ namespace gltoolbox
   template <typename T>
   class Buffer : public BaseBuffer
   {
+  public:
+    Buffer(GLenum target)
+        : BaseBuffer(target), mPtr(nullptr), mNum(-1)
+    {
+    }
+
+    Buffer(GLenum target, T *data, GLsizei num)
+        : BaseBuffer(target), mPtr(data), mNum(num)
+    {
+    }
+
+    Buffer(const Buffer &other) = delete;
+
+    Buffer(Buffer &&temp)
+        : BaseBuffer(temp)
+    {
+      mPtr = temp.mPtr;
+      mNum = temp.mNum;
+
+      temp.mPtr = nullptr;
+      temp.mNum = -1;
+    }
+
+    virtual ~Buffer()
+    {
+      mPtr = nullptr;
+      mNum = -1;
+    }
+
+    Buffer &operator=(const Buffer &other) = delete;
+
+    Buffer &operator=(Buffer &other)
+    {
+      //delete whatever was there
+      delete_buffer();
+
+      //move buffer ownership
+      mId = other.mId;
+      mOwned = other.mOwned;
+      mTarget = other.mTarget;
+      mPtr = other.mPtr;
+      mNum = other.mNum;
+
+      other.mId = 0;
+      other.mOwned = false;
+      other.mPtr = nullptr;
+      other.mNum = -1;
+
+      return *this;
+    }
+
+    virtual GLsizei element_size() const { return sizeof(T); }
+    virtual GLsizei num_elements() const { return mNum; }
+
+    //=====================================================
+    // Upload data to GPU
+    //=====================================================
+
+    virtual void update(GLenum usage = GL_STATIC_DRAW) const
+    {
+      bind();
+      glBufferData(target(), mNum * element_size(), mPtr, usage);
+    }
+
+    virtual void update(GLsizei offset, GLsizei num) const
+    {
+      bind();
+      glBufferSubData(target(), offset * element_size(), mNum * element_size(), mPtr);
+    }
+
+    void set(T *data, GLsizei num) const
+    {
+      mPtr = data;
+      mNum = num;
+
+      bind();
+      glBufferData(target(), mNum * sizeof(T), mPtr, usage());
+    }
+
+    //=====================================================
+    // Download data from GPU
+    //=====================================================
+
+    virtual void
+    get()
+    {
+      get(0, num_elements());
+    }
+
+    virtual void get(GLsizei offset, GLsizei num)
+    {
+      bind();
+      glGetBufferSubData(target(), offset * element_size(), num * element_size(), mPtr);
+    }
+
+    void get(T *data)
+    {
+      get(data, 0, num_elements());
+    }
+
+    void get(T *data, GLsizei offset, GLsizei num)
+    {
+      bind();
+      glGetBufferSubData(target(), offset * element_size(), num * element_size(), data);
+    }
+
+    void get(std::vector<T> &data)
+    {
+      get(data.data(), 0, num_elements);
+    }
+
+    void get(std::vector<T> &data, GLsizei offset, GLsizei num)
+    {
+      get(data.data(), offset, num);
+    }
+
+  protected:
+    //=====================================================
+    // Class Attributes
+    //=====================================================
+    // ! uniform does not have ownership of the pointer.
+    // ! mPtr will be dangling if it get deleted or get out of scope
+    T *mPtr;
+    GLsizei mNum;
   };
 }
 

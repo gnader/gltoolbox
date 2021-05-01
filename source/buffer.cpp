@@ -70,29 +70,6 @@ BaseBuffer &BaseBuffer::operator=(BaseBuffer &other)
   return *this;
 }
 
-void BaseBuffer::set_data(GLvoid *data, GLsizei size, GLenum usage) const
-{
-  bind();
-  glBufferData(target(), size, data, usage);
-}
-
-void BaseBuffer::set_subdata(GLvoid *data, GLintptr offset, GLsizei size) const
-{
-  bind();
-  glBufferSubData(target(), offset, size, data);
-}
-
-void BaseBuffer::get_data(GLvoid *data, GLsizei size) const
-{
-  get_subdata(data, 0, size);
-}
-
-void BaseBuffer::get_subdata(GLvoid *data, GLintptr offset, GLsizei size) const
-{
-  bind();
-  glGetBufferSubData(target(), offset, size, data);
-}
-
 void BaseBuffer::delete_buffer()
 {
   if (mOwned && is_valid())
