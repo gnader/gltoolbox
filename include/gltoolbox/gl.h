@@ -45,6 +45,10 @@ namespace gltoolbox
       glbinding::Binding::initialize(functionPointer, resolve);
     }
 
+    //=====================================================
+    // openGL info
+    //=====================================================
+
     static const GLubyte *gl_version()
     {
       return glGetString(GL_VERSION);
@@ -54,6 +58,30 @@ namespace gltoolbox
     {
       return glGetString(GL_SHADING_LANGUAGE_VERSION);
     }
+
+    //=====================================================
+    // Per-Fragment Operations
+    //=====================================================
+
+    static void enable_scissor() { glEnable(GL_SCISSOR_TEST); }
+    static void disbale_scissor() { glDisable(GL_SCISSOR_TEST); }
+    static GLboolean is_scissor_enabled() { return glIsEnabled(GL_SCISSOR_TEST); }
+
+    static void enable_stencil() { glEnable(GL_STENCIL_TEST); }
+    static void disbale_stencil() { glDisable(GL_STENCIL_TEST); }
+    static GLboolean is_stencil_enabled() { return glIsEnabled(GL_STENCIL_TEST); }
+
+    static void enable_depth() { glEnable(GL_DEPTH_TEST); }
+    static void disbale_depth() { glDisable(GL_DEPTH_TEST); }
+    static GLboolean is_depth_enabled() { return glIsEnabled(GL_DEPTH_TEST); }
+
+    static void enable_blend() { glEnable(GL_BLEND); }
+    static void disbale_blend() { glDisable(GL_BLEND); }
+    static GLboolean is_blend_enabled() { return glIsEnabled(GL_BLEND); }
+
+    static void enable_dither() { glEnable(GL_DITHER); }
+    static void disbale_dither() { glDisable(GL_DITHER); }
+    static GLboolean is_dither_enabled() { return glIsEnabled(GL_DITHER); }
   };
 }
 
