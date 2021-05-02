@@ -55,6 +55,7 @@ set(source
     ${CPP_FOLDER}/program.cpp
     ${CPP_FOLDER}/shader.cpp
     ${CPP_FOLDER}/uniform.cpp
+    ${CPP_FOLDER}/vertexarray.cpp
     ${CPP_FOLDER}/vertexattrib.cpp)
 
 set(header
@@ -64,6 +65,7 @@ set(header
     ${H_FOLDER}/program.h
     ${H_FOLDER}/shader.h
     ${H_FOLDER}/uniform.h
+    ${H_FOLDER}/vertexarray.h
     ${H_FOLDER}/vertexattrib.h)
 
 ## GLTOOLBOX

@@ -28,11 +28,32 @@
 #define __GLTOOLBOX_VERTEXATTRIB_H__
 
 #include "gl.h"
+#include "buffer.h"
 
 namespace gltoolbox
 {
+  class Program; //forward declaration of program class
+
   class VertexAttribute
   {
+  public:
+    VertexAttribute(Program *prog, GLint location);
+    VertexAttribute(Program *prog, const std::string &name);
+    VertexAttribute(Program *prog, GLint location, const std::string &name);
+
+    virtual ~VertexAttribute();
+
+    inline GLint location() const;
+    inline const std::string &name() const;
+
+    void enable() const;
+    void disable() const;
+
+  protected:
+    Program *mProg;
+
+    GLint mLocation;
+    std::string mName;
   };
 }
 

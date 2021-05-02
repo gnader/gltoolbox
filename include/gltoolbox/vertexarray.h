@@ -29,16 +29,28 @@
 
 #include "gl.h"
 #include "buffer.h"
+
 #include <unordered_map>
 
 namespace gltoolbox
 {
   class VertexArray
   {
-  public:
-    struct BufferBinding
+  protected:
+    //=====================================================
+    // member types
+    //=====================================================
+    struct IndexBuffer
     {
-      BaseBuffer *buffer;
+      std::shared_ptr<BaseBuffer> buffer;
+
+      GLenum mode;
+      GLenum type;
+    };
+
+    struct AttributeBuffer
+    {
+      std::shared_ptr<BaseBuffer> buffer; //a buffer can be shared by multiple vertex arrays
 
       GLint size;
       GLenum type;
@@ -48,10 +60,13 @@ namespace gltoolbox
     };
 
   public:
+    //=====================================================
+    // Initialisation
+    //=====================================================
     VertexArray();
 
     VertexArray(const VertexArray &other) = delete;
-    VertexArray(const VertexArray &&temp);
+    VertexArray(VertexArray &&temp);
 
     virtual ~VertexArray();
 
@@ -64,41 +79,74 @@ namespace gltoolbox
     inline GLboolean is_valid() const { return glIsVertexArray(mId); }
 
     //=====================================================
+    // bind/unbind
+    //=====================================================
+    inline void bind() const { glBindVertexArray(mId); }
+    inline void unbind() const { glBindVertexArray(0); }
+
+    //=====================================================
     // Drawcalls
     //=====================================================
-    inline GLenum &mode() { return mMode; }
-    inline GLenum mode() const { return mMode; }
-
-    inline void set_mode(GLenum mode) { mMode = mode; }
-
-    void DrawElements();
-    void DrawElements(GLsizei count);
-    void DrawElements(GLuint start, GLuint end);
+    void DrawElements() const;
+    void DrawElements(GLsizei inum) const;
+    void DrawElements(GLuint start, GLuint end) const;
 
     //=====================================================
     // Index Buffer
     //=====================================================
-
     bool has_index_buffer() const;
-    void set_index_buffer();
+
+    template <typename T>
+    void set_index_buffer(GLenum mode, T *indices, GLsizei count, GLenum usage = GL_STATIC_DRAW)
+    {
+      mIndices.buffer.reset(new Buffer<T>(GL_ELEMENT_ARRAY_BUFFER, indices, count, usage));
+      mIndices.mode = mode;
+      switch (sizeof(T))
+      {
+      case 8:
+        mIndices.type = GL_UNSIGNED_BYTE;
+        break;
+      case 16:
+        mIndices.type = GL_UNSIGNED_SHORT;
+        break;
+      case 32:
+        mIndices.type = GL_UNSIGNED_INT;
+        break;
+      }
+    }
+
+    template <typename T>
+    std::weak_ptr<Buffer<T>> index_buffer() const
+    {
+      return std::weak_ptr<Buffer<T>>(dynamic_cast<Buffer<T>>(mIndices.buffer.get()));
+    }
 
     //=====================================================
     // Vertex Buffers
     //=====================================================
-    bool has_vertex_buffer() const;
+    bool has_buffer(const std::string &name) const;
 
-    void attach_vertex_buffer(const std::string &name);
-    void detach_vertex_buffer(const std::string &name);
+    void add_buffer(const std::string &name);
+    void remove_buffer(const std::string &name);
 
-    void vertex_buffer(const std::string &name);
+    template <typename T>
+    std::weak_ptr<Buffer<T>> buffer(const std::string &name) const
+    {
+      return std::weak_ptr<Buffer<T>>(dynamic_cast<Buffer<T>>(mAttributes.at(name).buffer.get()));
+    }
+
+  protected:
+    void delete_vertexarray();
 
   protected:
     GLuint mId;
     bool mOwned;
 
-    GLenum mMode;
+    // index buffer
+    IndexBuffer mIndices;
 
-    //vertex buffers
+    // vertex attribute buffers
+    std::unordered_map<std::string, AttributeBuffer> mAttributes;
   };
 }
 
