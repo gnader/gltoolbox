@@ -46,7 +46,7 @@ namespace gltoolbox
       GLenum type;
       GLboolean normalized;
       GLsizei stride;
-      GLsizei offset;
+      GLuint offset;
     };
 
   protected:
@@ -92,9 +92,9 @@ namespace gltoolbox
     //=====================================================
     // Drawcalls
     //=====================================================
-    void DrawElements() const;
-    void DrawElements(GLsizei inum) const;
-    void DrawElements(GLuint start, GLuint end) const;
+    void drawElements() const;
+    void drawElements(GLsizei inum) const;
+    void drawElements(GLuint start, GLuint end) const;
 
     //=====================================================
     // Index Buffer
@@ -143,7 +143,7 @@ namespace gltoolbox
       if (search == mAttributes.end())
       {
         AttributeBuffer attr;
-        attr.buffer.reset(new Buffer<T>(GL_ARRAY_BUFFER, data, count * size, usage));
+        attr.buffer.reset(new Buffer<T>(GL_ARRAY_BUFFER, data, count, usage));
         attr.format = {size, type, stride, offset};
 
         mAttributes.insert({name, std::move(attr)});

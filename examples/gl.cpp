@@ -29,63 +29,97 @@
 #include <GLFW/glfw3.h>
 #include <gltoolbox/gltoolbox.h>
 
-#define TYPE int
+std::string vert = "#version 450 core \n in vec2 vtx_pos; \n void main(void) { gl_Position = vec4(vtx_pos.x, vtx_pos.y, 0., 1.0); }";
+std::string frag = "#version 450 core \n uniform float grey; \n out vec4 colour; \n void main(void) { colour = vec4(grey, grey, grey, 1.0); }";
 
 int main(int argc, char **argv)
 {
+  std::vector<float> pos = {-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5};
+  std::vector<unsigned int> indices = {0, 3, 2, 0, 2, 1};
+  float grey = 0.5;
+
   if (!glfwInit())
     return 1;
 
   glfwDefaultWindowHints();
-  glfwWindowHint(GLFW_VISIBLE, false);
+  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-  auto window = glfwCreateWindow(320, 240, "", nullptr, nullptr);
+  GLFWwindow *window = glfwCreateWindow(640, 480, "gltoolbox demo", nullptr, nullptr);
   if (!window)
   {
     glfwTerminate();
     return -1;
   }
-  glfwHideWindow(window);
+  // glfwHideWindow(window);
   glfwMakeContextCurrent(window);
-
   gltoolbox::GL::initilize(glfwGetProcAddress);
+  glfwSwapInterval(0);
 
   std::cout << "OpenGL version: " << gltoolbox::GL::gl_version() << std::endl;
   std::cout << "GLSL version: " << gltoolbox::GL::glsl_version() << std::endl;
 
   gltoolbox::Program prg;
-  prg.attach_shader(std::move(gltoolbox::Shader::from_file("blinn.vert", GL_VERTEX_SHADER)));
-  prg.attach_shader(std::move(gltoolbox::Shader::from_file("blinn.frag", GL_FRAGMENT_SHADER)));
+  prg.attach_shader(std::move(gltoolbox::Shader(vert, GL_VERTEX_SHADER)));
+  prg.attach_shader(std::move(gltoolbox::Shader(frag, GL_FRAGMENT_SHADER)));
   prg.link();
 
-  float u1 = 12.;
-  prg.add_uniform<float>("picking_radius", &u1);
-  prg.update_uniform();
+  std::cout << prg.get_shader(GL_VERTEX_SHADER).compile_status() << std::endl;
+  std::cout << prg.get_shader(GL_VERTEX_SHADER).is_valid() << std::endl;
 
-  auto display_vector = [](const std::vector<float> &vec) {
-    for (auto x : vec)
-      std::cout << x << " " << std::flush;
-    std::cout << std::endl;
-  };
+  std::cout << prg.get_shader(GL_FRAGMENT_SHADER).compile_status() << std::endl;
+  std::cout << prg.get_shader(GL_FRAGMENT_SHADER).is_valid() << std::endl;
 
-  std::vector<float> data{1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f};
-  std::vector<unsigned int> index{0, 1, 2, 3, 4, 5, 6};
+  std::cout << prg.is_valid() << std::endl;
+  std::cout << prg.link_status() << std::endl;
+
+  prg.add_uniform<float>("grey", &grey);
+  prg.add_attribute("vtx_pos");
+
+  std::cout << prg.num_active_attributes() << std::endl;
+  std::cout << prg.has_attribute("vtx_pos") << std::endl;
+
+  // std::vector<unsigned int> indices = {0, 1, 2, 0, 2, 3};
 
   gltoolbox::VertexArray vao;
-  vao.set_index_buffer<unsigned int>(GL_POINTS, index.data(), index.size());
-  vao.add_attribute<float>("points", data.data(), data.size(), 1, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
+  vao.set_index_buffer<unsigned int>(GL_TRIANGLES, indices.data(), indices.size(), GL_STATIC_DRAW);
+  vao.add_attribute<float>("vtx_pos", pos.data(), pos.size(), 2, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
 
+  std::cout << vao.has_index_buffer() << std::endl;
+  std::cout << vao.has_attribute("vtx_pos") << std::endl;
+
+  auto wp = vao.attribute_buffer("vtx_pos");
+  std::cout << wp.lock()->memory_size() << std::endl;
+
+  int width, height;
+
+  while (!glfwWindowShouldClose(window))
   {
-    auto wp = vao.attribute_buffer("points").lock();
+    glfwMakeContextCurrent(window);
+    glbinding::Binding::useCurrentContext();
 
-    std::cout << wp->memory_size() << std::endl;
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
 
-    display_vector(data);
-    data[4] = 40;
-    display_vector(data);
-    wp->get();
-    display_vector(data);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(1.f, 1.f, 1.f, 1.f);
+
+    prg.use();
+
+    vao.bind();
+    vao.enable_attribute(prg.attributes());
+    vao.drawElements();
+    vao.disable_attribute(prg.attributes());
+    vao.unbind();
+
+    prg.unuse();
+
+    glfwSwapBuffers(window);
+    glfwPollEvents();
   }
+
+  glfwDestroyWindow(window);
+  glfwTerminate();
 
   std::cout << "done." << std::endl;
 

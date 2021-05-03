@@ -104,7 +104,7 @@ bool Program::has_attribute(const std::string &name)
 bool Program::add_attribute(const std::string &name)
 {
   int loc = glGetAttribLocation(id(), name.c_str());
-  bool success = (loc > 0);
+  bool success = (loc >= 0);
 
   if (success)
     mAttributeList[name] = loc;

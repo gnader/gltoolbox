@@ -27,6 +27,8 @@
 #ifndef __GL_H__
 #define __GL_H__
 
+#include <iostream>
+
 #include <glbinding/Binding.h>
 #include <glbinding/gl/gl.h>
 using namespace gl;

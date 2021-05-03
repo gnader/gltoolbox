@@ -51,19 +51,19 @@ VertexArray::~VertexArray()
   delete_vertexarray();
 }
 
-void VertexArray::DrawElements() const
+void VertexArray::drawElements() const
 {
   mIndices.buffer.get()->bind();
   glDrawElements(mIndices.mode, mIndices.buffer.get()->num_elements(), mIndices.type, (GLvoid *)0);
 }
 
-void VertexArray::DrawElements(GLsizei inum) const
+void VertexArray::drawElements(GLsizei inum) const
 {
   mIndices.buffer.get()->bind();
   glDrawElementsInstanced(mIndices.mode, mIndices.buffer.get()->num_elements(), mIndices.type, (GLvoid *)0, inum);
 }
 
-void VertexArray::DrawElements(GLuint start, GLuint end) const
+void VertexArray::drawElements(GLuint start, GLuint end) const
 {
   mIndices.buffer.get()->bind();
   glDrawRangeElements(mIndices.mode, start, end, mIndices.buffer.get()->num_elements(), mIndices.type, (GLvoid *)0);
@@ -92,8 +92,9 @@ void VertexArray::enable_attribute(const std::string &name, GLint loc) const
   if (has_attribute(name))
   {
     const auto &format = attribute_format(name);
-    glVertexAttribPointer(loc, format.size, format.type, format.normalized, format.stride, (const GLvoid *)format.offset);
-    glEnableVertexArrayAttrib(id(), loc);
+    mAttributes.at(name).buffer->bind();
+    glVertexAttribPointer(loc, format.size, format.type, format.normalized, format.stride, 0);
+    glDisableVertexAttribArray(loc);
   }
 }
 
@@ -106,7 +107,10 @@ void VertexArray::enable_attribute(const std::unordered_map<std::string, GLint> 
 void VertexArray::disable_attribute(const std::string &name, GLint loc) const
 {
   if (has_attribute(name))
-    glDisableVertexArrayAttrib(id(), loc);
+  {
+    glDisableVertexAttribArray(loc);
+    mAttributes.at(name).buffer->unbind();
+  }
 }
 
 void VertexArray::disable_attribute(const std::unordered_map<std::string, GLint> &attributes) const
