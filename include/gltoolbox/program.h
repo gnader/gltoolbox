@@ -27,7 +27,6 @@
 #ifndef __GLTOOLBOX_PROGRAM_H__
 #define __GLTOOLBOX_PROGRAM_H__
 
-#include "buffer.h"
 #include "shader.h"
 #include "uniform.h"
 
@@ -76,15 +75,14 @@ namespace gltoolbox
     //============================
 
     inline GLint num_active_attributes() const { return get_parameter(GL_ACTIVE_ATTRIBUTES); }
+    inline const std::unordered_map<std::string, GLint> &attributes() const { return mAttributeList; }
 
-    // void add_attribute(const std::string &name, Buffer *buffer);
+    bool has_attribute(const std::string &name);
+
+    bool add_attribute(const std::string &name);
+    void add_attribute(const std::vector<std::string> &names);
+
     void remove_attribute(const std::string &name);
-
-    void enable_attribute(); // enables all attributes
-    void enable_attribute(const std::string &name);
-
-    void disable_attribute(); // disables all attributes
-    void disable_attribute(const std::string &name);
 
     //============================
     // Uniforms
@@ -137,6 +135,8 @@ namespace gltoolbox
     bool mOwned;
 
     std::unordered_map<GLenum, Shader> mShaderList;
+
+    std::unordered_map<std::string, GLint> mAttributeList;
     std::unordered_map<std::string, std::unique_ptr<BaseUniform>> mUniformList;
   };
 }

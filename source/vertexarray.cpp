@@ -77,7 +77,7 @@ bool VertexArray::has_index_buffer() const
   return false;
 }
 
-bool VertexArray::has_buffer(const std::string &name) const
+bool VertexArray::has_attribute(const std::string &name) const
 {
   auto search = mAttributes.find(name);
   if (search != mAttributes.end())
@@ -85,6 +85,34 @@ bool VertexArray::has_buffer(const std::string &name) const
       return mAttributes.at(name).buffer.get()->is_valid();
 
   return false;
+}
+
+void VertexArray::enable_attribute(const std::string &name, GLint loc) const
+{
+  if (has_attribute(name))
+  {
+    const auto &format = attribute_format(name);
+    glVertexAttribPointer(loc, format.size, format.type, format.normalized, format.stride, (const GLvoid *)format.offset);
+    glEnableVertexArrayAttrib(id(), loc);
+  }
+}
+
+void VertexArray::enable_attribute(const std::unordered_map<std::string, GLint> &attributes) const
+{
+  for (const auto &[name, loc] : attributes)
+    enable_attribute(name, loc);
+}
+
+void VertexArray::disable_attribute(const std::string &name, GLint loc) const
+{
+  if (has_attribute(name))
+    glDisableVertexArrayAttrib(id(), loc);
+}
+
+void VertexArray::disable_attribute(const std::unordered_map<std::string, GLint> &attributes) const
+{
+  for (const auto &[name, loc] : attributes)
+    disable_attribute(name, loc);
 }
 
 void VertexArray::delete_vertexarray()

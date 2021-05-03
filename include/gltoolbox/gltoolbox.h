@@ -33,5 +33,6 @@
 #include "program.h"
 #include "shader.h"
 #include "uniform.h"
+#include "vertexarray.h"
 
 #endif // __GLTOOLBOX_H__

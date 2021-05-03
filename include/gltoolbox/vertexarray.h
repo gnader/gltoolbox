@@ -36,10 +36,20 @@ namespace gltoolbox
 {
   class VertexArray
   {
-  protected:
     //=====================================================
     // member types
     //=====================================================
+  public:
+    struct AttributeFormat
+    {
+      GLint size;
+      GLenum type;
+      GLboolean normalized;
+      GLsizei stride;
+      GLsizei offset;
+    };
+
+  protected:
     struct IndexBuffer
     {
       std::shared_ptr<BaseBuffer> buffer;
@@ -50,13 +60,8 @@ namespace gltoolbox
 
     struct AttributeBuffer
     {
-      std::shared_ptr<BaseBuffer> buffer; //a buffer can be shared by multiple vertex arrays
-
-      GLint size;
-      GLenum type;
-      GLboolean normalized;
-      GLsizei stride;
-      GLsizei pointer;
+      std::shared_ptr<BaseBuffer> buffer;
+      AttributeFormat format;
     };
 
   public:
@@ -122,18 +127,65 @@ namespace gltoolbox
     }
 
     //=====================================================
-    // Vertex Buffers
+    // Attribute Buffers
     //=====================================================
-    bool has_buffer(const std::string &name) const;
+    size_t num_attributes() const { return mAttributes.size(); }
 
-    void add_buffer(const std::string &name);
-    void remove_buffer(const std::string &name);
+    bool has_attribute(const std::string &name) const;
 
     template <typename T>
-    std::weak_ptr<Buffer<T>> buffer(const std::string &name) const
+    bool add_attribute(const std::string &name,
+                       T *data, GLsizei count, GLsizei size,
+                       GLenum type, GLsizei stride, GLsizei offset,
+                       GLenum usage = GL_STATIC_DRAW, GLboolean normalized = GL_FALSE)
     {
-      return std::weak_ptr<Buffer<T>>(dynamic_cast<Buffer<T>>(mAttributes.at(name).buffer.get()));
+      auto search = mAttributes.find(name);
+      if (search == mAttributes.end())
+      {
+        AttributeBuffer attr;
+        attr.buffer.reset(new Buffer<T>(GL_ARRAY_BUFFER, data, count * size, usage));
+        attr.format = {size, type, stride, offset};
+
+        mAttributes.insert({name, std::move(attr)});
+
+        return true;
+      }
+
+      return false;
     }
+
+    void remove_attribute(const std::string &name)
+    {
+      auto search = mAttributes.find(name);
+      if (search != mAttributes.end())
+      {
+        //delete the buffer
+        mAttributes[name].buffer.reset();
+        mAttributes.erase(name);
+      }
+    }
+
+    std::weak_ptr<BaseBuffer> attribute_buffer(const std::string &name) const
+    {
+      std::weak_ptr<BaseBuffer> wp = mAttributes.at(name).buffer;
+      return wp;
+    }
+
+    const AttributeFormat &attribute_format(const std::string &name) const
+    {
+      return mAttributes.at(name).format;
+    }
+
+    AttributeFormat &attribute_format(const std::string &name)
+    {
+      return mAttributes.at(name).format;
+    }
+
+    void enable_attribute(const std::string &name, GLint loc) const;
+    void enable_attribute(const std::unordered_map<std::string, GLint> &attributes) const;
+
+    void disable_attribute(const std::string &name, GLint loc) const;
+    void disable_attribute(const std::unordered_map<std::string, GLint> &attributes) const;
 
   protected:
     void delete_vertexarray();

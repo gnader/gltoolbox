@@ -69,19 +69,23 @@ int main(int argc, char **argv)
   };
 
   std::vector<float> data{1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f};
-  gltoolbox::Buffer<float> b1(GL_ARRAY_BUFFER, data.data(), data.size(), GL_STATIC_DRAW);
+  std::vector<unsigned int> index{0, 1, 2, 3, 4, 5, 6};
 
-  std::cout << b1.element_size() << std::endl;
-  std::cout << b1.num_elements() << std::endl;
-  std::cout << b1.memory_size() << std::endl;
+  gltoolbox::VertexArray vao;
+  vao.set_index_buffer<unsigned int>(GL_POINTS, index.data(), index.size());
+  vao.add_attribute<float>("points", data.data(), data.size(), 1, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
 
-  std::vector<float> gpu_data;
-  gpu_data.resize(7, 0.f);
+  {
+    auto wp = vao.attribute_buffer("points").lock();
 
-  display_vector(gpu_data);
-  b1.get(gpu_data);
-  display_vector(gpu_data);
-  display_vector(data);
+    std::cout << wp->memory_size() << std::endl;
+
+    display_vector(data);
+    data[4] = 40;
+    display_vector(data);
+    wp->get();
+    display_vector(data);
+  }
 
   std::cout << "done." << std::endl;
 

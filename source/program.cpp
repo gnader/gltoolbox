@@ -95,6 +95,34 @@ void Program::detach_shader(GLenum type)
   mShaderList.erase(type);
 }
 
+bool Program::has_attribute(const std::string &name)
+{
+  auto search = mAttributeList.find(name);
+  return search != mAttributeList.end();
+}
+
+bool Program::add_attribute(const std::string &name)
+{
+  int loc = glGetAttribLocation(id(), name.c_str());
+  bool success = (loc > 0);
+
+  if (success)
+    mAttributeList[name] = loc;
+
+  return success;
+}
+
+void Program::add_attribute(const std::vector<std::string> &names)
+{
+  for (const auto &name : names)
+    add_attribute(name);
+}
+
+void Program::remove_attribute(const std::string &name)
+{
+  mAttributeList.erase(name);
+}
+
 void Program::update_uniform() const
 {
   for (const auto &[name, ptr] : mUniformList)
