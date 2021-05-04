@@ -26,35 +26,39 @@
 
 #include <iostream>
 
-#include <GLFW/glfw3.h>
 #include <gltoolbox/gltoolbox.h>
+#include <GLFW/glfw3.h>
 
 std::string vert = "#version 450 core \n in vec2 vtx_pos; \n void main(void) { gl_Position = vec4(vtx_pos.x, vtx_pos.y, 0., 1.0); }";
-std::string frag = "#version 450 core \n uniform float grey; \n out vec4 colour; \n void main(void) { colour = vec4(grey, grey, grey, 1.0); }";
+std::string frag = "#version 450 core \n uniform float grey; \n out vec4 colour; \n void main(void) { colour = vec4(grey, 0.0, 0.0, 1.0); }";
+
+static void glfw_error_callback(int error, const char *description)
+{
+  fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
 
 int main(int argc, char **argv)
 {
   std::vector<float> pos = {-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5};
   std::vector<unsigned int> indices = {0, 3, 2, 0, 2, 1};
-  float grey = 0.5;
+  float grey = 0.8;
 
+  glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit())
     return 1;
 
-  glfwDefaultWindowHints();
-  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
   GLFWwindow *window = glfwCreateWindow(640, 480, "gltoolbox demo", nullptr, nullptr);
-  if (!window)
-  {
-    glfwTerminate();
-    return -1;
-  }
+  if (window == nullptr)
+    return 1;
+
   // glfwHideWindow(window);
   glfwMakeContextCurrent(window);
+  glfwSwapInterval(1);
+
   gltoolbox::GL::initilize(glfwGetProcAddress);
-  glfwSwapInterval(0);
 
   std::cout << "OpenGL version: " << gltoolbox::GL::gl_version() << std::endl;
   std::cout << "GLSL version: " << gltoolbox::GL::glsl_version() << std::endl;
@@ -64,37 +68,19 @@ int main(int argc, char **argv)
   prg.attach_shader(std::move(gltoolbox::Shader(frag, GL_FRAGMENT_SHADER)));
   prg.link();
 
-  std::cout << prg.get_shader(GL_VERTEX_SHADER).compile_status() << std::endl;
-  std::cout << prg.get_shader(GL_VERTEX_SHADER).is_valid() << std::endl;
-
-  std::cout << prg.get_shader(GL_FRAGMENT_SHADER).compile_status() << std::endl;
-  std::cout << prg.get_shader(GL_FRAGMENT_SHADER).is_valid() << std::endl;
-
-  std::cout << prg.is_valid() << std::endl;
-  std::cout << prg.link_status() << std::endl;
-
   prg.add_uniform<float>("grey", &grey);
   prg.add_attribute("vtx_pos");
-
-  std::cout << prg.num_active_attributes() << std::endl;
-  std::cout << prg.has_attribute("vtx_pos") << std::endl;
-
-  // std::vector<unsigned int> indices = {0, 1, 2, 0, 2, 3};
 
   gltoolbox::VertexArray vao;
   vao.set_index_buffer<unsigned int>(GL_TRIANGLES, indices.data(), indices.size(), GL_STATIC_DRAW);
   vao.add_attribute<float>("vtx_pos", pos.data(), pos.size(), 2, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
 
-  std::cout << vao.has_index_buffer() << std::endl;
-  std::cout << vao.has_attribute("vtx_pos") << std::endl;
-
-  auto wp = vao.attribute_buffer("vtx_pos");
-  std::cout << wp.lock()->memory_size() << std::endl;
-
   int width, height;
 
   while (!glfwWindowShouldClose(window))
   {
+    glfwPollEvents();
+
     glfwMakeContextCurrent(window);
     glbinding::Binding::useCurrentContext();
 
@@ -106,6 +92,8 @@ int main(int argc, char **argv)
 
     prg.use();
 
+    prg.enable_uniform("grey");
+
     vao.bind();
     vao.enable_attribute(prg.attributes());
     vao.drawElements();
@@ -115,13 +103,10 @@ int main(int argc, char **argv)
     prg.unuse();
 
     glfwSwapBuffers(window);
-    glfwPollEvents();
   }
 
   glfwDestroyWindow(window);
   glfwTerminate();
-
-  std::cout << "done." << std::endl;
 
   return 0;
 }

@@ -94,7 +94,7 @@ namespace gltoolbox
     bool add_uniform(const std::string &name, T *ptr, GLsizei count = 1)
     {
       GLint loc = glGetUniformLocation(id(), name.c_str());
-      if (loc > 0)
+      if (loc >= 0)
       {
         auto search = mUniformList.find(name);
         if (search != mUniformList.end())
@@ -105,8 +105,9 @@ namespace gltoolbox
       return false;
     }
 
-    void update_uniform() const;
-    void update_uniform(const std::string &name) const;
+    void enable_uniform() const;
+    void enable_uniform(const std::string &name) const;
+
     template <typename T>
     void update_uniform(const std::string &name, T *ptr, GLsizei count = 1)
     {

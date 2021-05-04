@@ -108,13 +108,13 @@ namespace gltoolbox
       mIndices.mode = mode;
       switch (sizeof(T))
       {
-      case 8:
+      case 1:
         mIndices.type = GL_UNSIGNED_BYTE;
         break;
-      case 16:
+      case 2:
         mIndices.type = GL_UNSIGNED_SHORT;
         break;
-      case 32:
+      case 4:
         mIndices.type = GL_UNSIGNED_INT;
         break;
       }

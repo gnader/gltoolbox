@@ -123,13 +123,13 @@ void Program::remove_attribute(const std::string &name)
   mAttributeList.erase(name);
 }
 
-void Program::update_uniform() const
+void Program::enable_uniform() const
 {
   for (const auto &[name, ptr] : mUniformList)
     ptr.get()->update();
 }
 
-void Program::update_uniform(const std::string &name) const
+void Program::enable_uniform(const std::string &name) const
 {
   const auto &search = mUniformList.find(name);
   if (search != mUniformList.end())

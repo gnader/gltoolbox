@@ -54,7 +54,8 @@ VertexArray::~VertexArray()
 void VertexArray::drawElements() const
 {
   mIndices.buffer.get()->bind();
-  glDrawElements(mIndices.mode, mIndices.buffer.get()->num_elements(), mIndices.type, (GLvoid *)0);
+  GLsizei count = mIndices.buffer.get()->num_elements();
+  glDrawElements(mIndices.mode, count, mIndices.type, (GLvoid *)0);
 }
 
 void VertexArray::drawElements(GLsizei inum) const
@@ -94,7 +95,7 @@ void VertexArray::enable_attribute(const std::string &name, GLint loc) const
     const auto &format = attribute_format(name);
     mAttributes.at(name).buffer->bind();
     glVertexAttribPointer(loc, format.size, format.type, format.normalized, format.stride, 0);
-    glDisableVertexAttribArray(loc);
+    glEnableVertexAttribArray(loc);
   }
 }
 

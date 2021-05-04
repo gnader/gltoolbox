@@ -72,5 +72,5 @@ add_library(gltoolbox ${source} ${header})
 
 ## EXAMPLES
 #--------------------------------------------------------------------
-add_executable(gl examples/gl.cpp)
-target_link_libraries(gl gltoolbox ${GLBINDING_LIBRARIES} ${GLFW_LIBRARIES})
+add_executable(demo examples/demo.cpp)
+target_link_libraries(demo gltoolbox ${GLBINDING_LIBRARIES} ${GLFW_LIBRARIES})
