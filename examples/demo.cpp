@@ -95,9 +95,9 @@ int main(int argc, char **argv)
     prg.enable_uniform("grey");
 
     vao.bind();
-    vao.enable_attribute(prg.attributes());
-    vao.drawElements();
-    vao.disable_attribute(prg.attributes());
+    vao.enable_attributes(prg.attributes());
+    vao.draw_elements();
+    vao.disable_attributes(prg.attributes());
     vao.unbind();
 
     prg.unuse();

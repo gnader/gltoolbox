@@ -80,7 +80,7 @@ namespace gltoolbox
     bool has_attribute(const std::string &name);
 
     bool add_attribute(const std::string &name);
-    void add_attribute(const std::vector<std::string> &names);
+    void add_attributes(const std::vector<std::string> &names);
 
     void remove_attribute(const std::string &name);
 
@@ -105,7 +105,7 @@ namespace gltoolbox
       return false;
     }
 
-    void enable_uniform() const;
+    void enable_uniforms() const;
     void enable_uniform(const std::string &name) const;
 
     template <typename T>

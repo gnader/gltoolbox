@@ -112,7 +112,7 @@ bool Program::add_attribute(const std::string &name)
   return success;
 }
 
-void Program::add_attribute(const std::vector<std::string> &names)
+void Program::add_attributes(const std::vector<std::string> &names)
 {
   for (const auto &name : names)
     add_attribute(name);
@@ -123,7 +123,7 @@ void Program::remove_attribute(const std::string &name)
   mAttributeList.erase(name);
 }
 
-void Program::enable_uniform() const
+void Program::enable_uniforms() const
 {
   for (const auto &[name, ptr] : mUniformList)
     ptr.get()->update();

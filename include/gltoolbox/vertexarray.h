@@ -92,9 +92,9 @@ namespace gltoolbox
     //=====================================================
     // Drawcalls
     //=====================================================
-    void drawElements() const;
-    void drawElements(GLsizei inum) const;
-    void drawElements(GLuint start, GLuint end) const;
+    void draw_elements() const;
+    void draw_elements(GLsizei inum) const;
+    void draw_elements(GLuint start, GLuint end) const;
 
     //=====================================================
     // Index Buffer
@@ -182,10 +182,10 @@ namespace gltoolbox
     }
 
     void enable_attribute(const std::string &name, GLint loc) const;
-    void enable_attribute(const std::unordered_map<std::string, GLint> &attributes) const;
+    void enable_attributes(const std::unordered_map<std::string, GLint> &attributes) const;
 
     void disable_attribute(const std::string &name, GLint loc) const;
-    void disable_attribute(const std::unordered_map<std::string, GLint> &attributes) const;
+    void disable_attributes(const std::unordered_map<std::string, GLint> &attributes) const;
 
   protected:
     void delete_vertexarray();

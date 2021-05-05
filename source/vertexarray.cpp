@@ -51,20 +51,20 @@ VertexArray::~VertexArray()
   delete_vertexarray();
 }
 
-void VertexArray::drawElements() const
+void VertexArray::draw_elements() const
 {
   mIndices.buffer.get()->bind();
   GLsizei count = mIndices.buffer.get()->num_elements();
   glDrawElements(mIndices.mode, count, mIndices.type, (GLvoid *)0);
 }
 
-void VertexArray::drawElements(GLsizei inum) const
+void VertexArray::draw_elements(GLsizei inum) const
 {
   mIndices.buffer.get()->bind();
   glDrawElementsInstanced(mIndices.mode, mIndices.buffer.get()->num_elements(), mIndices.type, (GLvoid *)0, inum);
 }
 
-void VertexArray::drawElements(GLuint start, GLuint end) const
+void VertexArray::draw_elements(GLuint start, GLuint end) const
 {
   mIndices.buffer.get()->bind();
   glDrawRangeElements(mIndices.mode, start, end, mIndices.buffer.get()->num_elements(), mIndices.type, (GLvoid *)0);
@@ -99,7 +99,7 @@ void VertexArray::enable_attribute(const std::string &name, GLint loc) const
   }
 }
 
-void VertexArray::enable_attribute(const std::unordered_map<std::string, GLint> &attributes) const
+void VertexArray::enable_attributes(const std::unordered_map<std::string, GLint> &attributes) const
 {
   for (const auto &[name, loc] : attributes)
     enable_attribute(name, loc);
@@ -114,7 +114,7 @@ void VertexArray::disable_attribute(const std::string &name, GLint loc) const
   }
 }
 
-void VertexArray::disable_attribute(const std::unordered_map<std::string, GLint> &attributes) const
+void VertexArray::disable_attributes(const std::unordered_map<std::string, GLint> &attributes) const
 {
   for (const auto &[name, loc] : attributes)
     disable_attribute(name, loc);
