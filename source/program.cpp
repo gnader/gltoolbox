@@ -28,14 +28,14 @@
 using namespace gltoolbox;
 
 Program::Program()
-    : mId(0), mOwned(true)
+    : mId(0), mOwned(false)
 {
-  mId = glCreateProgram();
+  create();
 }
 
 Program::Program(Program &&temp)
 {
-  delete_program();
+  destroy();
   delete_uniforms();
 
   mId = temp.mId;
@@ -49,7 +49,7 @@ Program::Program(Program &&temp)
 
 Program::~Program()
 {
-  delete_program();
+  destroy();
   delete_uniforms();
 }
 
@@ -153,12 +153,22 @@ std::string Program::info_log() const
   return log;
 }
 
-void Program::delete_program()
+void Program::create()
+{
+  if (!mOwned || !is_valid())
+  {
+    mId = glCreateProgram();
+    mOwned = true;
+  }
+}
+
+void Program::destroy()
 {
   if (mOwned && is_valid())
   {
     glDeleteProgram(mId);
     mId = 0;
+    mOwned = false;
   }
 }
 

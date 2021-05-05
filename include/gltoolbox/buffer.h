@@ -43,6 +43,7 @@ namespace gltoolbox
     virtual ~BaseBuffer();
 
     BaseBuffer &operator=(const BaseBuffer &other) = delete;
+    BaseBuffer &operator=(BaseBuffer &other);
 
     //=====================================================
     // Buffer information
@@ -77,7 +78,8 @@ namespace gltoolbox
     virtual void get(GLsizei offset, GLsizei num) const = 0;
 
   protected:
-    void delete_buffer();
+    void create();
+    void destroy();
 
     GLint get_parameter(const GLenum param) const;
 
@@ -126,7 +128,7 @@ namespace gltoolbox
     Buffer &operator=(Buffer &other)
     {
       //delete whatever was there
-      delete_buffer();
+      destroy();
 
       //move buffer ownership
       mId = other.mId;

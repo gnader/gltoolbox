@@ -67,7 +67,8 @@ namespace gltoolbox
     inline GLsizei source_length() const { return get_parameter(GL_SHADER_SOURCE_LENGTH); }
 
   protected:
-    void delete_shader();
+    void create(GLenum type);
+    void destroy();
 
     void set_source(const std::string &src) const;
     void set_source_file(const std::string &filename);

@@ -29,16 +29,15 @@
 using namespace gltoolbox;
 
 BaseBuffer::BaseBuffer(GLenum target)
-    : mId(0), mOwned(true), mTarget(target)
+    : mId(0), mOwned(false), mTarget(target)
 {
-  glCreateBuffers(1, &mId);
-  bind(); // this will actually trigger the buffer creation
+  create();
 }
 
 BaseBuffer::BaseBuffer(BaseBuffer &&temp)
 {
   //delete whatever was there
-  delete_buffer();
+  destroy();
 
   //move buffer ownership
   mId = temp.mId;
@@ -51,15 +50,42 @@ BaseBuffer::BaseBuffer(BaseBuffer &&temp)
 
 BaseBuffer::~BaseBuffer()
 {
-  delete_buffer();
+  destroy();
 }
 
-void BaseBuffer::delete_buffer()
+BaseBuffer &BaseBuffer::operator=(BaseBuffer &other)
+{
+  //delete whatever was there
+  destroy();
+
+  //move buffer ownership
+  mId = other.mId;
+  mOwned = other.mOwned;
+  mTarget = other.mTarget;
+
+  other.mId = 0;
+  other.mOwned = false;
+
+  return *this;
+}
+
+void BaseBuffer::create()
+{
+  if (!mOwned || !is_valid())
+  {
+    glCreateBuffers(1, &mId);
+    bind(); // this will actually trigger the buffer creation
+    mOwned = true;
+  }
+}
+
+void BaseBuffer::destroy()
 {
   if (mOwned && is_valid())
   {
     glDeleteBuffers(1, &mId);
     mId = 0;
+    mOwned = false;
   }
 }
 

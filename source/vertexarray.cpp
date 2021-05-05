@@ -28,15 +28,15 @@
 using namespace gltoolbox;
 
 VertexArray::VertexArray()
-    : mId(0), mOwned(true)
+    : mId(0), mOwned(false)
 {
-  glCreateVertexArrays(1, &mId);
+  create();
 }
 
 VertexArray::VertexArray(VertexArray &&temp)
 {
   // delete whatever there is here
-  delete_vertexarray();
+  destroy();
 
   mId = temp.mId;
   mOwned = temp.mOwned;
@@ -48,7 +48,7 @@ VertexArray::VertexArray(VertexArray &&temp)
 
 VertexArray::~VertexArray()
 {
-  delete_vertexarray();
+  destroy();
 }
 
 void VertexArray::draw_elements() const
@@ -120,11 +120,22 @@ void VertexArray::disable_attributes(const std::unordered_map<std::string, GLint
     disable_attribute(name, loc);
 }
 
-void VertexArray::delete_vertexarray()
+void VertexArray::create()
+{
+  if (!mOwned || !is_valid())
+  {
+    glCreateVertexArrays(1, &mId);
+    bind(); // this will actually trigger the buffer creation
+    mOwned = true;
+  }
+}
+
+void VertexArray::destroy()
 {
   if (mOwned && is_valid())
   {
     glDeleteVertexArrays(1, &mId);
     mId = 0;
+    mOwned = false;
   }
 }

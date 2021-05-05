@@ -188,7 +188,8 @@ namespace gltoolbox
     void disable_attributes(const std::unordered_map<std::string, GLint> &attributes) const;
 
   protected:
-    void delete_vertexarray();
+    void create();
+    void destroy();
 
   protected:
     GLuint mId;

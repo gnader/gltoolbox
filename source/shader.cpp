@@ -42,14 +42,14 @@ Shader Shader::from_file(const std::string &filename, GLenum type)
 }
 
 Shader::Shader()
-    : mId(0), mOwned(true), mFilename(""), mIsFromFile(false)
+    : mId(0), mOwned(false), mFilename(""), mIsFromFile(false)
 {
 }
 
 Shader::Shader(const std::string &src, GLenum type)
-    : mId(0), mOwned(true), mFilename(""), mIsFromFile(false)
+    : mId(0), mOwned(false), mFilename(""), mIsFromFile(false)
 {
-  mId = glCreateShader(type);
+  create(type);
   set_source(src);
 
   bool success = compile();
@@ -60,7 +60,7 @@ Shader::Shader(const std::string &src, GLenum type)
 
 Shader::Shader(Shader &&temp)
 {
-  delete_shader();
+  destroy();
 
   mId = temp.mId;
   mOwned = temp.mOwned;
@@ -73,7 +73,7 @@ Shader::Shader(Shader &&temp)
 
 Shader::~Shader()
 {
-  delete_shader();
+  destroy();
 }
 
 bool Shader::compile() const
@@ -130,15 +130,6 @@ std::string Shader::source() const
   return src;
 }
 
-void Shader::delete_shader()
-{
-  if (mOwned && is_valid())
-  {
-    glDeleteShader(mId);
-    mId = 0;
-  }
-}
-
 void Shader::set_source(const std::string &src) const
 {
   const GLchar *_src = src.c_str();
@@ -149,6 +140,25 @@ void Shader::set_source_file(const std::string &filename)
 {
   mFilename = filename;
   mIsFromFile = true;
+}
+
+void Shader::create(GLenum type)
+{
+  if (!mOwned || !is_valid())
+  {
+    mId = glCreateShader(type);
+    mOwned = true;
+  }
+}
+
+void Shader::destroy()
+{
+  if (mOwned && is_valid())
+  {
+    glDeleteShader(mId);
+    mId = 0;
+    mOwned = false;
+  }
 }
 
 GLint Shader::get_parameter(const GLenum param) const

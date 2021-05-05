@@ -126,7 +126,9 @@ namespace gltoolbox
     inline GLsizei info_log_length() const { return get_parameter(GL_INFO_LOG_LENGTH); }
 
   protected:
-    void delete_program();
+    void create();
+    void destroy();
+
     void delete_uniforms();
 
     GLint get_parameter(const GLenum param) const;
