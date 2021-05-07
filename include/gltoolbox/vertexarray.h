@@ -165,10 +165,12 @@ namespace gltoolbox
       }
     }
 
-    std::weak_ptr<BaseBuffer> attribute_buffer(const std::string &name) const
+    template <typename T>
+    std::weak_ptr<Buffer<T>> attribute_buffer(const std::string &name) const
     {
-      std::weak_ptr<BaseBuffer> wp = mAttributes.at(name).buffer;
-      return wp;
+      // std::weak_ptr<BaseBuffer> wp = mAttributes.at(name).buffer;
+      // return wp;
+      return std::weak_ptr<Buffer<T>>(dynamic_cast<Buffer<T>>(mAttributes.at(name).buffer.get()));
     }
 
     const AttributeFormat &attribute_format(const std::string &name) const

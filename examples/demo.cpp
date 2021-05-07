@@ -27,10 +27,8 @@
 #include <iostream>
 
 #include <gltoolbox/gltoolbox.h>
+#include <gltoolbox/shapes.h>
 #include <GLFW/glfw3.h>
-
-std::string vert = "#version 450 core \n in vec2 vtx_pos; \n void main(void) { gl_Position = vec4(vtx_pos.x, vtx_pos.y, 0., 1.0); }";
-std::string frag = "#version 450 core \n uniform float grey; \n out vec4 colour; \n void main(void) { colour = vec4(grey, 0.0, 0.0, 1.0); }";
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -39,10 +37,6 @@ static void glfw_error_callback(int error, const char *description)
 
 int main(int argc, char **argv)
 {
-  std::vector<float> pos = {-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5};
-  std::vector<unsigned int> indices = {0, 3, 2, 0, 2, 1};
-  float grey = 0.8;
-
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit())
     return 1;
@@ -50,7 +44,7 @@ int main(int argc, char **argv)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
-  GLFWwindow *window = glfwCreateWindow(640, 480, "gltoolbox demo", nullptr, nullptr);
+  GLFWwindow *window = glfwCreateWindow(640, 640, "gltoolbox demo", nullptr, nullptr);
   if (window == nullptr)
     return 1;
 
@@ -62,18 +56,6 @@ int main(int argc, char **argv)
 
   std::cout << "OpenGL version: " << gltoolbox::GL::gl_version() << std::endl;
   std::cout << "GLSL version: " << gltoolbox::GL::glsl_version() << std::endl;
-
-  gltoolbox::Program prg;
-  prg.attach_shader(std::move(gltoolbox::Shader(vert, GL_VERTEX_SHADER)));
-  prg.attach_shader(std::move(gltoolbox::Shader(frag, GL_FRAGMENT_SHADER)));
-  prg.link();
-
-  prg.add_uniform<float>("grey", &grey);
-  prg.add_attribute("vtx_pos");
-
-  gltoolbox::VertexArray vao;
-  vao.set_index_buffer<unsigned int>(GL_TRIANGLES, indices.data(), indices.size(), GL_STATIC_DRAW);
-  vao.add_attribute<float>("vtx_pos", pos.data(), pos.size(), 2, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
 
   int width, height;
 
@@ -90,17 +72,7 @@ int main(int argc, char **argv)
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(1.f, 1.f, 1.f, 1.f);
 
-    prg.use();
-
-    prg.enable_uniform("grey");
-
-    vao.bind();
-    vao.enable_attributes(prg.attributes());
-    vao.draw_elements();
-    vao.disable_attributes(prg.attributes());
-    vao.unbind();
-
-    prg.unuse();
+    gltoolbox::Shapes::draw_ngon(4, 3.4);
 
     glfwSwapBuffers(window);
   }

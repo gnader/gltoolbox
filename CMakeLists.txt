@@ -54,6 +54,7 @@ set(source
     ${CPP_FOLDER}/buffer.cpp
     ${CPP_FOLDER}/program.cpp
     ${CPP_FOLDER}/shader.cpp
+    ${CPP_FOLDER}/shapes.cpp
     ${CPP_FOLDER}/uniform.cpp
     ${CPP_FOLDER}/vertexarray.cpp)
 
@@ -63,6 +64,7 @@ set(header
     ${H_FOLDER}/buffer.h
     ${H_FOLDER}/program.h
     ${H_FOLDER}/shader.h
+    ${H_FOLDER}/shapes.h
     ${H_FOLDER}/uniform.h
     ${H_FOLDER}/vertexarray.h)
 

@@ -27,7 +27,8 @@
 #ifndef __GLTOOLBOX_SHAPES_H__
 #define __GLTOOLBOX_SHAPES_H_
 
-#include <array>
+#include "program.h"
+#include "vertexarray.h"
 
 namespace gltoolbox
 {
@@ -36,15 +37,40 @@ namespace gltoolbox
   public:
     Shapes() = delete; //is a pure static function
 
+    static void set_color(float r, float g, float b);
+    static void draw_ngon(int n, float x);
+
   public:
-    static void set_canvas();
+    static void init();
 
-    static void draw_ngon(int n, float x, float y, float rx, float ry, float theta);
+  protected:
+    class PolygonRenderer
+    {
+    public:
+      PolygonRenderer();
+      virtual ~PolygonRenderer();
 
-    static void draw_triangle(float x, float y, float rx, float ry, float theta);
-    static void draw_square(float x, float y, float a, float theta);
-    static void draw_rectangle(float x, float y, float h, float w, float theta);
-    static void draw_disk(float x, float y, float c);
+      void color(float r, float g, float b);
+
+      void init(int npts);
+      void render();
+
+    protected:
+      void update_indices(int n);
+
+    protected:
+      std::array<float, 3> mColor;
+
+      std::vector<float> mCoords;
+      std::vector<unsigned short> mIndices;
+
+      Program mPrg;
+      VertexArray mVao;
+    };
+
+  protected:
+    static std::unique_ptr<PolygonRenderer> mPoly;
+    static bool mIsInit;
   };
 
 } // namespace gltoolbox
