@@ -120,10 +120,10 @@ namespace gltoolbox
       }
     }
 
-    template <typename T>
-    std::weak_ptr<Buffer<T>> index_buffer() const
+    std::weak_ptr<BaseBuffer> index_buffer() const
     {
-      return std::weak_ptr<Buffer<T>>(dynamic_cast<Buffer<T>>(mIndices.buffer.get()));
+      std::weak_ptr<BaseBuffer> wp = mIndices.buffer;
+      return wp;
     }
 
     //=====================================================
@@ -165,12 +165,10 @@ namespace gltoolbox
       }
     }
 
-    template <typename T>
-    std::weak_ptr<Buffer<T>> attribute_buffer(const std::string &name) const
+    std::weak_ptr<BaseBuffer> attribute_buffer(const std::string &name) const
     {
-      // std::weak_ptr<BaseBuffer> wp = mAttributes.at(name).buffer;
-      // return wp;
-      return std::weak_ptr<Buffer<T>>(dynamic_cast<Buffer<T>>(mAttributes.at(name).buffer.get()));
+      std::weak_ptr<BaseBuffer> wp = mAttributes.at(name).buffer;
+      return wp;
     }
 
     const AttributeFormat &attribute_format(const std::string &name) const

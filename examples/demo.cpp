@@ -72,7 +72,10 @@ int main(int argc, char **argv)
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(1.f, 1.f, 1.f, 1.f);
 
-    gltoolbox::Shapes::draw_ngon(4, 3.4);
+    gltoolbox::Shapes::color(0.7, 0.3, 0.1);
+    gltoolbox::Shapes::draw_quad(0, 00, 100, 100);
+    gltoolbox::Shapes::draw_quad(200, 200, 100, 100);
+    gltoolbox::Shapes::draw_quad(400, 400, 100, 100);
 
     glfwSwapBuffers(window);
   }

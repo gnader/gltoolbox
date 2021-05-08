@@ -55,6 +55,12 @@ namespace gltoolbox
     static const GLubyte *glsl_version() { return glGetString(GL_SHADING_LANGUAGE_VERSION); }
 
     //=====================================================
+    // info
+    //=====================================================
+
+    static void get_viewport(GLint *vp) { glGetIntegerv(GL_VIEWPORT, vp); }
+
+    //=====================================================
     // Per-Fragment Operations
     //=====================================================
 

@@ -37,8 +37,11 @@ namespace gltoolbox
   public:
     Shapes() = delete; //is a pure static function
 
-    static void set_color(float r, float g, float b);
-    static void draw_ngon(int n, float x);
+    static void color(float r, float g, float b, float a = 1.f);
+    static void zvalue(float z);
+
+    static void draw_ngon(int n, float x, float y, float w, float h, float theta = 0.f);
+    static void draw_quad(float x, float y, float w, float h, float theta = 0.f);
 
   public:
     static void init();
@@ -50,16 +53,22 @@ namespace gltoolbox
       PolygonRenderer();
       virtual ~PolygonRenderer();
 
-      void color(float r, float g, float b);
+      void color(float r, float g, float b, float a = 1.f);
+      void zvalue(float z);
 
       void init(int npts);
-      void render();
+      void render(int n, float x, float y, float w, float h, float theta = 0.f);
 
     protected:
-      void update_indices(int n);
+      void update_indices();
 
     protected:
-      std::array<float, 3> mColor;
+      int mNumSamples;
+      int mSides;
+
+      std::array<float, 4> mColor;
+      float mAspect;
+      float mZindex;
 
       std::vector<float> mCoords;
       std::vector<unsigned short> mIndices;

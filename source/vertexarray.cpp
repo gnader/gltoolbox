@@ -67,7 +67,7 @@ void VertexArray::draw_elements(GLsizei inum) const
 void VertexArray::draw_elements(GLuint start, GLuint end) const
 {
   mIndices.buffer.get()->bind();
-  glDrawRangeElements(mIndices.mode, start, end, mIndices.buffer.get()->num_elements(), mIndices.type, (GLvoid *)0);
+  glDrawRangeElements(mIndices.mode, start, end, end - start, mIndices.type, (GLvoid *)0);
 }
 
 bool VertexArray::has_index_buffer() const
