@@ -56,7 +56,9 @@ void Shapes::draw_ngon(int n, float x, float y, float w, float h, float theta)
 
 void Shapes::draw_quad(float x, float y, float w, float h, float theta)
 {
-  draw_ngon(4, x, y, w, h, theta - M_PI_4);
+  //rotate the 4-gon by 45deg
+  //scale by 2/sqrt(2) and adjust position accordingly to account for rotation
+  draw_ngon(4, x - w * 0.5 * 0.41421356237, y - h * 0.5 * 0.41421356237, w * 1.41421356237, h * 1.41421356237, theta - M_PI_4);
 }
 
 void Shapes::init()
@@ -69,7 +71,6 @@ void Shapes::init()
 Shapes::PolygonRenderer::PolygonRenderer()
 {
   mColor = {0.f, 0.f, 0.f, 1.f};
-  mAspect = 1;
   mZindex = 0;
 }
 
@@ -97,21 +98,27 @@ void Shapes::PolygonRenderer::init(int npts)
 
   std::string vert = "#version 450 core \n"
                      "in vec2 vert; \n"
+                     //  "out vec2 coord; \n"
                      "uniform vec2 scale; \n"
                      "uniform vec2 pos; \n"
                      "uniform float theta; \n"
-                     "uniform float aspect; \n"
                      "uniform float zindex; \n"
                      "void main(void) {\n"
                      "  vec2 coord; \n"
-                     "  coord.x = (vert.x*cos(theta) - vert.y*sin(theta))*aspect \n;"
+                     "  coord.x = vert.x*cos(theta) - vert.y*sin(theta) \n;"
                      "  coord.y = vert.x*sin(theta) + vert.y*cos(theta) \n;"
-                     "  coord.x = scale.x * coord.x - (1 - pos.x); \n"
-                     "  coord.y = scale.y * coord.y + (1 - pos.y); \n"
+                     "  coord.x = scale.x * coord.x - pos.x; \n"
+                     "  coord.y = scale.y * coord.y + pos.y; \n"
                      "  gl_Position = vec4(coord.x, coord.y, zindex, 1.0); \n"
                      "}";
 
-  std::string frag = "#version 450 core \n uniform vec4 rgba; \n out vec4 colour; \n void main(void) { colour = rgba; }";
+  std::string frag = "#version 450 core \n"
+                     "out vec4 colour; \n"
+                     //  "in vec2 coord; \n"
+                     "uniform vec4 rgba; \n"
+                     "void main(void) {\n"
+                     "  colour = rgba; \n"
+                     "}";
 
   //setup program
   mPrg.attach_shader(std::move(gltoolbox::Shader(vert, GL_VERTEX_SHADER)));
@@ -123,8 +130,6 @@ void Shapes::PolygonRenderer::init(int npts)
   mPrg.add_uniform<std::array<float, 2>>("scale", nullptr);
   mPrg.add_uniform<std::array<float, 2>>("pos", nullptr);
   mPrg.add_uniform<float>("theta", nullptr);
-
-  mPrg.add_uniform<float>("aspect", &mAspect);
   mPrg.add_uniform<float>("zindex", &mZindex);
 
   mPrg.add_uniform<std::array<float, 4>>("rgba", &mColor);
@@ -132,6 +137,8 @@ void Shapes::PolygonRenderer::init(int npts)
   //init coord vector
   mCoords.resize((npts + 1) * 2);
   float dtheta = 2 * M_PI / float(npts);
+  mCoords[0] = 0;
+  mCoords[1] = 0;
   for (int i = 0; i < npts; ++i)
   {
     mCoords[2 * (i + 1) + 0] = sin(i * dtheta);
@@ -168,8 +175,6 @@ void Shapes::PolygonRenderer::render(int n, float x, float y, float w, float h, 
   GL::get_viewport(vp);
 
   //compute viewport aspect ratio
-  mAspect = float(vp[3]) / float(vp[2]);
-
   float W = float(vp[2] - vp[0]);
   float H = float(vp[3] - vp[1]);
 
@@ -178,14 +183,14 @@ void Shapes::PolygonRenderer::render(int n, float x, float y, float w, float h, 
 
   //compute object scale
   std::array<float, 2> scale;
-  scale[0] = w / H;
+  scale[0] = w / W;
   scale[1] = h / H;
   mPrg.update_uniform("scale", &scale);
 
   //compute object position
   std::array<float, 2> pos;
-  pos[0] = (w + x) / W;
-  pos[1] = (h + y) / H;
+  pos[0] = (W - (w + 2.f * x)) / W;
+  pos[1] = (H - (h + 2.f * y)) / H;
   mPrg.update_uniform("pos", &pos);
 
   //do the rendering

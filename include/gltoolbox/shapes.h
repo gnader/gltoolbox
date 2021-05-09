@@ -67,9 +67,8 @@ namespace gltoolbox
       int mSides;
 
       std::array<float, 4> mColor;
-      float mAspect;
-      float mZindex;
 
+      float mZindex;
       std::vector<float> mCoords;
       std::vector<unsigned short> mIndices;
 
