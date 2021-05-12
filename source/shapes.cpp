@@ -28,25 +28,25 @@
 
 using namespace gltoolbox;
 
-std::unique_ptr<Shapes::PolygonRenderer> Shapes::mPoly;
+std::unique_ptr<Shape2D::PolygonRenderer> Shape2D::mPoly;
 
-bool Shapes::mIsInit = false;
+bool Shape2D::mIsInit = false;
 
-void Shapes::color(float r, float g, float b, float a)
+void Shape2D::color(float r, float g, float b, float a)
 {
   if (!mIsInit)
     init();
   mPoly->color(r, g, b, a);
 }
 
-void Shapes::zvalue(float z)
+void Shape2D::zvalue(float z)
 {
   if (!mIsInit)
     init();
   mPoly->zvalue(z);
 }
 
-void Shapes::draw_ngon(int n, float x, float y, float w, float h, float theta)
+void Shape2D::draw_ngon(int n, float x, float y, float w, float h, float theta)
 {
   if (!mIsInit)
     init();
@@ -54,31 +54,37 @@ void Shapes::draw_ngon(int n, float x, float y, float w, float h, float theta)
   mPoly->render(n, x, y, w, h, theta);
 }
 
-void Shapes::draw_quad(float x, float y, float w, float h, float theta)
+void Shape2D::draw_quad(float x, float y, float w, float h, float theta)
 {
   //rotate the 4-gon by 45deg
   //scale by 2/sqrt(2) and adjust position accordingly to account for rotation
   draw_ngon(4, x - w * 0.5 * 0.41421356237, y - h * 0.5 * 0.41421356237, w * 1.41421356237, h * 1.41421356237, theta - M_PI_4);
 }
 
-void Shapes::init()
+void Shape2D::draw_line(float xa, float ya, float xb, float yb, float thicknes)
+{
+  float angle = std::atan2(yb - ya, xb - xa);
+  draw_quad(xa, ya - 0.5 * thicknes, xb - xa, yb + 0.5 * thicknes - ya, angle);
+}
+
+void Shape2D::init()
 {
   mPoly.reset(new PolygonRenderer());
   mPoly->init(360);
   mIsInit = true;
 }
 
-Shapes::PolygonRenderer::PolygonRenderer()
+Shape2D::PolygonRenderer::PolygonRenderer()
 {
   mColor = {0.f, 0.f, 0.f, 1.f};
   mZindex = 0;
 }
 
-Shapes::PolygonRenderer::~PolygonRenderer()
+Shape2D::PolygonRenderer::~PolygonRenderer()
 {
 }
 
-void Shapes::PolygonRenderer::color(float r, float g, float b, float a)
+void Shape2D::PolygonRenderer::color(float r, float g, float b, float a)
 {
   mColor[0] = r;
   mColor[1] = g;
@@ -86,38 +92,36 @@ void Shapes::PolygonRenderer::color(float r, float g, float b, float a)
   mColor[3] = a;
 }
 
-void Shapes::PolygonRenderer::zvalue(float z)
+void Shape2D::PolygonRenderer::zvalue(float z)
 {
   mZindex = z;
 }
 
-void Shapes::PolygonRenderer::init(int npts)
+void Shape2D::PolygonRenderer::init(int npts)
 {
   mNumSamples = npts;
   mSides = npts;
 
   std::string vert = "#version 450 core \n"
-                     "in vec2 vert; \n"
-                     //  "out vec2 coord; \n"
                      "uniform vec2 scale; \n"
                      "uniform vec2 pos; \n"
                      "uniform float theta; \n"
                      "uniform float zindex; \n"
+                     "in vec2 vert; \n"
                      "void main(void) {\n"
                      "  vec2 coord; \n"
-                     "  coord.x = vert.x*cos(theta) - vert.y*sin(theta) \n;"
-                     "  coord.y = vert.x*sin(theta) + vert.y*cos(theta) \n;"
-                     "  coord.x = scale.x * coord.x - pos.x; \n"
-                     "  coord.y = scale.y * coord.y + pos.y; \n"
+                     "  coord.x = (scale.x*vert.x*cos(theta) - scale.y*vert.y*sin(theta));\n"
+                     "  coord.y = (scale.x*vert.x*sin(theta) + scale.y*vert.y*cos(theta));\n"
+                     "  coord.x = coord.x - pos.x; \n"
+                     "  coord.y = coord.y + pos.y; \n"
                      "  gl_Position = vec4(coord.x, coord.y, zindex, 1.0); \n"
                      "}";
 
   std::string frag = "#version 450 core \n"
                      "out vec4 colour; \n"
-                     //  "in vec2 coord; \n"
                      "uniform vec4 rgba; \n"
                      "void main(void) {\n"
-                     "  colour = rgba; \n"
+                     " colour = rgba; \n"
                      "}";
 
   //setup program
@@ -160,7 +164,7 @@ void Shapes::PolygonRenderer::init(int npts)
   mVao.add_attribute<float>("vert", mCoords.data(), mCoords.size(), 2, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
 }
 
-void Shapes::PolygonRenderer::render(int n, float x, float y, float w, float h, float theta)
+void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h, float theta)
 {
   //if the number of sides changed
   //compute new index buffer
@@ -204,7 +208,7 @@ void Shapes::PolygonRenderer::render(int n, float x, float y, float w, float h, 
   mPrg.unuse();
 }
 
-void Shapes::PolygonRenderer::update_indices()
+void Shape2D::PolygonRenderer::update_indices()
 {
   int offset = mNumSamples / mSides;
 

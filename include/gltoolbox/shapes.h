@@ -32,16 +32,18 @@
 
 namespace gltoolbox
 {
-  class Shapes
+  class Shape2D
   {
   public:
-    Shapes() = delete; //is a pure static function
+    Shape2D() = delete; //is a pure static function
 
     static void color(float r, float g, float b, float a = 1.f);
     static void zvalue(float z);
 
     static void draw_ngon(int n, float x, float y, float w, float h, float theta = 0.f);
+
     static void draw_quad(float x, float y, float w, float h, float theta = 0.f);
+    static void draw_line(float xa, float ya, float xb, float yb, float thickness);
 
   public:
     static void init();

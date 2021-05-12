@@ -44,7 +44,7 @@ int main(int argc, char **argv)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
-  GLFWwindow *window = glfwCreateWindow(400, 400, "gltoolbox demo", nullptr, nullptr);
+  GLFWwindow *window = glfwCreateWindow(1000, 1000, "gltoolbox demo", nullptr, nullptr);
   if (window == nullptr)
     return 1;
 
@@ -72,16 +72,16 @@ int main(int argc, char **argv)
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(1.f, 1.f, 1.f, 1.f);
 
-    gltoolbox::Shapes::color(0.9, 0.1, 0.1);
-
-    gltoolbox::Shapes::draw_quad(100, 0, width - 100, 200);
-    gltoolbox::Shapes::color(0.1, 0.8, 0.1);
-    gltoolbox::Shapes::draw_quad(0, 0, 200, 200);
-
-    // gltoolbox::Shapes::draw_quad(300, 300, 200, 200);
-
-    // gltoolbox::Shapes::draw_quad(200, 0, 100, 100);
-    // gltoolbox::Shapes::draw_quad(400, 0, 100, 100);
+    // gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
+    // gltoolbox::Shape2D::draw_quad(200, 0, width - 200, 200, M_PI / 10.);
+    gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
+    gltoolbox::Shape2D::draw_quad(500, 200, 100, 300, M_PI_4);
+    // gltoolbox::Shape2D::color(0.1, 0.1, 0.8);
+    // gltoolbox::Shape2D::draw_quad(0, 0, 200, 200);
+    // gltoolbox::Shape2D::color(0.8, 0.5, 0.1);
+    // gltoolbox::Shape2D::draw_quad(200, 200, width - 200, height - 200);
+    // gltoolbox::Shape2D::color(0.8, 0.8, 0.8);
+    // gltoolbox::Shape2D::draw_line(100, 100, 400, 400, 50);
 
     glfwSwapBuffers(window);
   }
