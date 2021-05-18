@@ -75,7 +75,10 @@ int main(int argc, char **argv)
     // gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
     // gltoolbox::Shape2D::draw_quad(200, 0, width - 200, 200, M_PI / 10.);
     gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
-    gltoolbox::Shape2D::draw_quad(500, 200, 100, 300, M_PI_4);
+    gltoolbox::Shape2D::draw_ngon(360, 50, 50, 200, 200);
+    gltoolbox::Shape2D::draw_ngon(4, 200, 200, 600, 600);
+    // gltoolbox::Shape2D::draw_quad(400, 200, 100, 300);
+    // gltoolbox::Shape2D::draw_quad(600, 200, 100, 300, M_PI_4);
     // gltoolbox::Shape2D::color(0.1, 0.1, 0.8);
     // gltoolbox::Shape2D::draw_quad(0, 0, 200, 200);
     // gltoolbox::Shape2D::color(0.8, 0.5, 0.1);

@@ -62,7 +62,7 @@ namespace gltoolbox
       void render(int n, float x, float y, float w, float h, float theta = 0.f);
 
     protected:
-      void update_indices();
+      void update_vertices();
 
     protected:
       int mNumSamples;

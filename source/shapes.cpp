@@ -58,7 +58,7 @@ void Shape2D::draw_quad(float x, float y, float w, float h, float theta)
 {
   //rotate the 4-gon by 45deg
   //scale by 2/sqrt(2) and adjust position accordingly to account for rotation
-  draw_ngon(4, x - w * 0.5 * 0.41421356237, y - h * 0.5 * 0.41421356237, w * 1.41421356237, h * 1.41421356237, theta - M_PI_4);
+  draw_ngon(4, x - w * 0.5 * 0.41421356237, y - h * 0.5 * 0.41421356237, w * 1.41421356237, h * 1.41421356237, theta);
 }
 
 void Shape2D::draw_line(float xa, float ya, float xb, float yb, float thicknes)
@@ -110,8 +110,10 @@ void Shape2D::PolygonRenderer::init(int npts)
                      "in vec2 vert; \n"
                      "void main(void) {\n"
                      "  vec2 coord; \n"
-                     "  coord.x = (scale.x*vert.x*cos(theta) - scale.y*vert.y*sin(theta));\n"
-                     "  coord.y = (scale.x*vert.x*sin(theta) + scale.y*vert.y*cos(theta));\n"
+                     "  coord.x = scale.x*vert.x;\n"
+                     "  coord.y = scale.y*vert.y;\n"
+                     "  coord.x = (scale.x*vert.x*cos(theta) - scale.x*vert.y*sin(theta));\n"
+                     "  coord.y = (scale.y*vert.x*sin(theta) + scale.y*vert.y*cos(theta));\n"
                      "  coord.x = coord.x - pos.x; \n"
                      "  coord.y = coord.y + pos.y; \n"
                      "  gl_Position = vec4(coord.x, coord.y, zindex, 1.0); \n"
@@ -121,7 +123,7 @@ void Shape2D::PolygonRenderer::init(int npts)
                      "out vec4 colour; \n"
                      "uniform vec4 rgba; \n"
                      "void main(void) {\n"
-                     " colour = rgba; \n"
+                     "  colour = rgba; \n"
                      "}";
 
   //setup program
@@ -139,7 +141,7 @@ void Shape2D::PolygonRenderer::init(int npts)
   mPrg.add_uniform<std::array<float, 4>>("rgba", &mColor);
 
   //init coord vector
-  mCoords.resize((npts + 1) * 2);
+  mCoords.resize((npts + 2) * 2);
   float dtheta = 2 * M_PI / float(npts);
   mCoords[0] = 0;
   mCoords[1] = 0;
@@ -148,20 +150,26 @@ void Shape2D::PolygonRenderer::init(int npts)
     mCoords[2 * (i + 1) + 0] = sin(i * dtheta);
     mCoords[2 * (i + 1) + 1] = cos(i * dtheta);
   }
+  mCoords[2 * (npts + 1) + 0] = sin(0);
+  mCoords[2 * (npts + 1) + 1] = cos(0);
 
   //init index vector
-  mIndices.resize(npts * 3, 0);
-  for (int i = 0; i < npts; ++i)
-  {
-    mIndices[3 * i + 0] = 0;
-    mIndices[3 * i + 1] = i + 1;
-    mIndices[3 * i + 2] = i + 2;
-  }
-  mIndices.back() = 1;
+  // mIndices.resize(npts * 3, 0);
+  // for (int i = 0; i < npts; ++i)
+  // {
+  //   mIndices[3 * i + 0] = 0;
+  //   mIndices[3 * i + 1] = i + 1;
+  //   mIndices[3 * i + 2] = i + 2;
+  // }
+  // mIndices.back() = 1;
+  mIndices.resize(npts + 2, 0);
+  for (int i = 0; i < mIndices.size(); ++i)
+    mIndices[i] = i;
 
   //setup vao
-  mVao.set_index_buffer<unsigned short>(GL_TRIANGLES, mIndices.data(), mIndices.size(), GL_DYNAMIC_DRAW);
-  mVao.add_attribute<float>("vert", mCoords.data(), mCoords.size(), 2, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
+  // mVao.set_index_buffer<unsigned short>(GL_TRIANGLES, mIndices.data(), mIndices.size(), GL_STATIC_DRAW);
+  mVao.set_index_buffer<unsigned short>(GL_TRIANGLE_FAN, mIndices.data(), mIndices.size(), GL_STATIC_DRAW);
+  mVao.add_attribute<float>("vert", mCoords.data(), mCoords.size(), 2, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW);
 }
 
 void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h, float theta)
@@ -172,7 +180,7 @@ void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h,
   if (mSides != n)
   {
     mSides = n;
-    update_indices();
+    update_vertices();
   }
 
   GLint vp[4];
@@ -202,23 +210,25 @@ void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h,
   mPrg.enable_uniforms();
   mVao.bind();
   mVao.enable_attributes(mPrg.attributes());
-  mVao.draw_elements(0, 3 * mSides);
+  // mVao.draw_elements(0, 3 * mSides);
+
+  mVao.draw_elements(0, mSides + 2);
+
   mVao.disable_attributes(mPrg.attributes());
   mVao.unbind();
   mPrg.unuse();
 }
 
-void Shape2D::PolygonRenderer::update_indices()
+void Shape2D::PolygonRenderer::update_vertices()
 {
-  int offset = mNumSamples / mSides;
-
+  float dtheta = 2 * M_PI / float(mSides);
   for (int i = 0; i < mSides; ++i)
   {
-    mIndices[3 * i + 0] = 0;
-    mIndices[3 * i + 1] = i * offset + 1;
-    mIndices[3 * i + 2] = (i + 1) * offset + 1;
+    mCoords[2 * (i + 1) + 0] = sin(i * dtheta);
+    mCoords[2 * (i + 1) + 1] = cos(i * dtheta);
   }
-  mIndices[3 * (mSides - 1) + 2] = 1;
+  mCoords[2 * (mSides + 1) + 0] = sin(0);
+  mCoords[2 * (mSides + 1) + 1] = cos(0);
 
-  mVao.index_buffer().lock()->update(0, 3 * mSides);
+  mVao.attribute_buffer("vert").lock()->update(0, 2 * (mSides + 2));
 }
