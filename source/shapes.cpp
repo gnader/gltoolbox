@@ -58,14 +58,17 @@ void Shape2D::draw_quad(float x, float y, float w, float h, float theta)
 {
   //rotate the 4-gon by 45deg
   //scale by 2/sqrt(2) and adjust position accordingly to account for rotation
-  draw_ngon(4, x - w * 0.5 * 0.41421356237, y - h * 0.5 * 0.41421356237, w * 1.41421356237, h * 1.41421356237, theta);
+  if (!mIsInit)
+    init();
+
+  mPoly->render(4, x - w * 0.5 * 0.41421356237, y - h * 0.5 * 0.41421356237, w * 1.41421356237, h * 1.41421356237, theta, -M_PI_4);
 }
 
-void Shape2D::draw_line(float xa, float ya, float xb, float yb, float thicknes)
-{
-  float angle = std::atan2(yb - ya, xb - xa);
-  draw_quad(xa, ya - 0.5 * thicknes, xb - xa, yb + 0.5 * thicknes - ya, angle);
-}
+// void Shape2D::draw_line(float xa, float ya, float xb, float yb, float thicknes)
+// {
+//   float angle = std::atan2(yb - ya, xb - xa);
+//   draw_quad(xa, ya - 0.5 * thicknes, xb - xa, yb + 0.5 * thicknes - ya, angle);
+// }
 
 void Shape2D::init()
 {
@@ -105,15 +108,16 @@ void Shape2D::PolygonRenderer::init(int npts)
   std::string vert = "#version 450 core \n"
                      "uniform vec2 scale; \n"
                      "uniform vec2 pos; \n"
-                     "uniform float theta; \n"
+                     "uniform float theta1; \n"
+                     "uniform float theta2; \n"
                      "uniform float zindex; \n"
                      "in vec2 vert; \n"
                      "void main(void) {\n"
-                     "  vec2 coord; \n"
-                     "  coord.x = scale.x*vert.x;\n"
-                     "  coord.y = scale.y*vert.y;\n"
-                     "  coord.x = (scale.x*vert.x*cos(theta) - scale.x*vert.y*sin(theta));\n"
-                     "  coord.y = (scale.y*vert.x*sin(theta) + scale.y*vert.y*cos(theta));\n"
+                     "  mat2 r2 = mat2(cos(theta2), sin(theta2), -sin(theta2), cos(theta2)); \n"
+                     "  mat2 s  = mat2(scale.x    , 0          , 0           , scale.y    ); \n"
+                     "  mat2 r1 = mat2(cos(theta1), sin(theta1), -sin(theta1), cos(theta1)); \n"
+                     "  vec2 coord = s*r2*vert; \n"
+
                      "  coord.x = coord.x - pos.x; \n"
                      "  coord.y = coord.y + pos.y; \n"
                      "  gl_Position = vec4(coord.x, coord.y, zindex, 1.0); \n"
@@ -135,7 +139,10 @@ void Shape2D::PolygonRenderer::init(int npts)
 
   mPrg.add_uniform<std::array<float, 2>>("scale", nullptr);
   mPrg.add_uniform<std::array<float, 2>>("pos", nullptr);
-  mPrg.add_uniform<float>("theta", nullptr);
+
+  mPrg.add_uniform<float>("theta1", nullptr);
+  mPrg.add_uniform<float>("theta2", nullptr);
+
   mPrg.add_uniform<float>("zindex", &mZindex);
 
   mPrg.add_uniform<std::array<float, 4>>("rgba", &mColor);
@@ -154,25 +161,16 @@ void Shape2D::PolygonRenderer::init(int npts)
   mCoords[2 * (npts + 1) + 1] = cos(0);
 
   //init index vector
-  // mIndices.resize(npts * 3, 0);
-  // for (int i = 0; i < npts; ++i)
-  // {
-  //   mIndices[3 * i + 0] = 0;
-  //   mIndices[3 * i + 1] = i + 1;
-  //   mIndices[3 * i + 2] = i + 2;
-  // }
-  // mIndices.back() = 1;
   mIndices.resize(npts + 2, 0);
   for (int i = 0; i < mIndices.size(); ++i)
     mIndices[i] = i;
 
   //setup vao
-  // mVao.set_index_buffer<unsigned short>(GL_TRIANGLES, mIndices.data(), mIndices.size(), GL_STATIC_DRAW);
   mVao.set_index_buffer<unsigned short>(GL_TRIANGLE_FAN, mIndices.data(), mIndices.size(), GL_STATIC_DRAW);
   mVao.add_attribute<float>("vert", mCoords.data(), mCoords.size(), 2, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW);
 }
 
-void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h, float theta)
+void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h, float theta1, float theta2)
 {
   //if the number of sides changed
   //compute new index buffer
@@ -191,7 +189,8 @@ void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h,
   float H = float(vp[3] - vp[1]);
 
   //orientation
-  mPrg.update_uniform("theta", &theta);
+  mPrg.update_uniform("theta1", &theta1);
+  mPrg.update_uniform("theta2", &theta2);
 
   //compute object scale
   std::array<float, 2> scale;
@@ -210,8 +209,6 @@ void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h,
   mPrg.enable_uniforms();
   mVao.bind();
   mVao.enable_attributes(mPrg.attributes());
-  // mVao.draw_elements(0, 3 * mSides);
-
   mVao.draw_elements(0, mSides + 2);
 
   mVao.disable_attributes(mPrg.attributes());
