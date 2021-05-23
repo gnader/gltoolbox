@@ -64,11 +64,17 @@ void Shape2D::draw_quad(float x, float y, float w, float h, float theta)
   mPoly->render(4, x - w * 0.5 * 0.41421356237, y - h * 0.5 * 0.41421356237, w * 1.41421356237, h * 1.41421356237, theta, -M_PI_4);
 }
 
-// void Shape2D::draw_line(float xa, float ya, float xb, float yb, float thicknes)
-// {
-//   float angle = std::atan2(yb - ya, xb - xa);
-//   draw_quad(xa, ya - 0.5 * thicknes, xb - xa, yb + 0.5 * thicknes - ya, angle);
-// }
+void Shape2D::draw_line(float xa, float ya, float xb, float yb, float thicknes)
+{
+  float vec[2] = {-(yb - ya), xb - xa};
+  float norm = std::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+  vec[0] = vec[0] / norm;
+  vec[1] = vec[1] / norm;
+
+  float angle = std::atan2(vec[1], vec[0]);
+  draw_quad(xa - 0.5 * thicknes * vec[1], ya + 0.5 * thicknes * vec[0],
+            norm, thicknes, angle);
+}
 
 void Shape2D::init()
 {
@@ -108,6 +114,7 @@ void Shape2D::PolygonRenderer::init(int npts)
   std::string vert = "#version 450 core \n"
                      "uniform vec2 scale; \n"
                      "uniform vec2 pos; \n"
+                     "uniform float ratio; \n"
                      "uniform float theta1; \n"
                      "uniform float theta2; \n"
                      "uniform float zindex; \n"
@@ -116,9 +123,8 @@ void Shape2D::PolygonRenderer::init(int npts)
                      "  mat2 r2 = mat2(cos(theta2), sin(theta2), -sin(theta2), cos(theta2)); \n"
                      "  mat2 s  = mat2(scale.x    , 0          , 0           , scale.y    ); \n"
                      "  mat2 r1 = mat2(cos(theta1), sin(theta1), -sin(theta1), cos(theta1)); \n"
-                     "  vec2 coord = s*r2*vert; \n"
-
-                     "  coord.x = coord.x - pos.x; \n"
+                     "  vec2 coord = r1*s*r2*vert; \n"
+                     "  coord.x = ratio*coord.x - pos.x; \n"
                      "  coord.y = coord.y + pos.y; \n"
                      "  gl_Position = vec4(coord.x, coord.y, zindex, 1.0); \n"
                      "}";
@@ -140,6 +146,7 @@ void Shape2D::PolygonRenderer::init(int npts)
   mPrg.add_uniform<std::array<float, 2>>("scale", nullptr);
   mPrg.add_uniform<std::array<float, 2>>("pos", nullptr);
 
+  mPrg.add_uniform<float>("ratio", nullptr);
   mPrg.add_uniform<float>("theta1", nullptr);
   mPrg.add_uniform<float>("theta2", nullptr);
 
@@ -188,13 +195,16 @@ void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h,
   float W = float(vp[2] - vp[0]);
   float H = float(vp[3] - vp[1]);
 
+  float ratio = H / W;
+  mPrg.update_uniform("ratio", &ratio);
+
   //orientation
   mPrg.update_uniform("theta1", &theta1);
   mPrg.update_uniform("theta2", &theta2);
 
   //compute object scale
   std::array<float, 2> scale;
-  scale[0] = w / W;
+  scale[0] = w / H;
   scale[1] = h / H;
   mPrg.update_uniform("scale", &scale);
 

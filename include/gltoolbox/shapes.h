@@ -43,7 +43,7 @@ namespace gltoolbox
     static void draw_ngon(int n, float x, float y, float w, float h, float theta = 0.f);
 
     static void draw_quad(float x, float y, float w, float h, float theta = 0.f);
-    // static void draw_line(float xa, float ya, float xb, float yb, float thickness);
+    static void draw_line(float xa, float ya, float xb, float yb, float thickness);
 
   public:
     static void init();
