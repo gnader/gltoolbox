@@ -27,8 +27,8 @@
 #ifndef __GLTOOLBOX_SHAPES_H__
 #define __GLTOOLBOX_SHAPES_H_
 
-#include "program.h"
-#include "vertexarray.h"
+#include <gltoolbox/program.h>
+#include <gltoolbox/vertexarray.h>
 
 namespace gltoolbox
 {

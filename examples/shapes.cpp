@@ -24,7 +24,7 @@
   * SOFTWARE.
   */
 
-#include <gltoolbox/shapes.h>
+#include "shapes.h"
 
 using namespace gltoolbox;
 

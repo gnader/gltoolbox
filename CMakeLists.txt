@@ -54,7 +54,6 @@ set(source
     ${CPP_FOLDER}/buffer.cpp
     ${CPP_FOLDER}/program.cpp
     ${CPP_FOLDER}/shader.cpp
-    ${CPP_FOLDER}/shapes.cpp
     ${CPP_FOLDER}/uniform.cpp
     ${CPP_FOLDER}/vertexarray.cpp)
 
@@ -64,7 +63,6 @@ set(header
     ${H_FOLDER}/buffer.h
     ${H_FOLDER}/program.h
     ${H_FOLDER}/shader.h
-    ${H_FOLDER}/shapes.h
     ${H_FOLDER}/uniform.h
     ${H_FOLDER}/vertexarray.h)
 
@@ -74,5 +72,5 @@ add_library(gltoolbox ${source} ${header})
 
 ## EXAMPLES
 #--------------------------------------------------------------------
-add_executable(demo examples/demo.cpp)
+add_executable(demo examples/demo.cpp examples/shapes.cpp)
 target_link_libraries(demo gltoolbox ${GLBINDING_LIBRARIES} ${GLFW_LIBRARIES})

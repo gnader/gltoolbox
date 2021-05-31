@@ -27,8 +27,8 @@
 #include <iostream>
 
 #include <gltoolbox/gltoolbox.h>
-#include <gltoolbox/shapes.h>
 #include <GLFW/glfw3.h>
+#include "shapes.h"
 
 static void glfw_error_callback(int error, const char *description)
 {
