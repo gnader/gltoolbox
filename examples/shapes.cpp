@@ -131,15 +131,14 @@ void Shape2D::PolygonRenderer::init(int npts)
 
   mPrg.add_attribute("vert");
 
-  mPrg.add_uniform<std::array<float, 2>>("scale", nullptr);
-  mPrg.add_uniform<std::array<float, 2>>("pos", nullptr);
+  mPrg.add_uniform<std::array<float, 2>>("scale");
+  mPrg.add_uniform<std::array<float, 2>>("pos");
 
-  mPrg.add_uniform<float>("ratio", nullptr);
-  mPrg.add_uniform<float>("theta1", nullptr);
-  mPrg.add_uniform<float>("theta2", nullptr);
+  mPrg.add_uniform<float>("ratio");
+  mPrg.add_uniform<float>("theta1");
+  mPrg.add_uniform<float>("theta2");
 
   mPrg.add_uniform<float>("zindex", &mZindex);
-
   mPrg.add_uniform<std::array<float, 4>>("rgba", &mColor);
 
   //init coord vector
@@ -176,41 +175,40 @@ void Shape2D::PolygonRenderer::render(int n, float x, float y, float w, float h,
     update_vertices();
   }
 
+  //compute viewport aspect ratio
   GLint vp[4];
   GL::get_viewport(vp);
-
-  //compute viewport aspect ratio
   float W = float(vp[2] - vp[0]);
   float H = float(vp[3] - vp[1]);
-
   float ratio = H / W;
-  mPrg.update_uniform("ratio", &ratio);
-
-  //orientation
-  mPrg.update_uniform("theta1", &theta1);
-  mPrg.update_uniform("theta2", &theta2);
 
   //compute object scale
   std::array<float, 2> scale;
   scale[0] = w / H;
   scale[1] = h / H;
-  mPrg.update_uniform("scale", &scale);
 
   //compute object position
   std::array<float, 2> pos;
   pos[0] = (W - (w + 2.f * x)) / W;
   pos[1] = (H - (h + 2.f * y)) / H;
-  mPrg.update_uniform("pos", &pos);
 
   //do the rendering
   mPrg.use();
-  mPrg.enable_uniforms();
+
+  mPrg.enable_uniform("ratio", &ratio);
+  mPrg.enable_uniform("theta1", &theta1);
+  mPrg.enable_uniform("theta2", &theta2);
+  mPrg.enable_uniform("scale", &scale);
+  mPrg.enable_uniform("pos", &pos);
+  mPrg.enable_uniform("zindex");
+  mPrg.enable_uniform("rgba");
+
   mVao.bind();
   mVao.enable_attributes(mPrg.attributes());
   mVao.draw_elements(0, mSides + 2);
-
   mVao.disable_attributes(mPrg.attributes());
   mVao.unbind();
+
   mPrg.unuse();
 }
 

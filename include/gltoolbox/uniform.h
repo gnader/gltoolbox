@@ -51,6 +51,7 @@ namespace gltoolbox
     inline GLint location() const { return mLocation; }
     inline const std::string &name() const { return mName; }
 
+    virtual bool is_attached() const = 0;
     virtual void update() const = 0;
 
   protected:
@@ -142,17 +143,17 @@ namespace gltoolbox
   class Uniform : public BaseUniform
   {
   public:
-    Uniform(Program *prog, GLint location, T *data, GLsizei count = 1)
+    Uniform(Program *prog, GLint location, T *data = nullptr, GLsizei count = 1)
         : BaseUniform(prog, location), mPtr(data), mCount(count)
     {
     }
 
-    Uniform(Program *prog, const std::string &name, T *data, GLsizei count = 1)
+    Uniform(Program *prog, const std::string &name, T *data = nullptr, GLsizei count = 1)
         : BaseUniform(prog, name), mPtr(data), mCount(count)
     {
     }
 
-    Uniform(Program *prog, GLint location, const std::string &name, T *data, GLsizei count = 1)
+    Uniform(Program *prog, GLint location, const std::string &name, T *data = nullptr, GLsizei count = 1)
         : BaseUniform(prog, location, name), mPtr(data), mCount(count)
     {
     }
@@ -162,16 +163,27 @@ namespace gltoolbox
       mPtr = nullptr;
     }
 
-    virtual void update() const
+    virtual bool is_attached() const
     {
-      update_value(mCount, mPtr);
+      return (mPtr != nullptr);
     }
 
-    void update(T *data, GLsizei count = 1)
+    void attach(T *data, GLsizei count = 1)
     {
       mPtr = data; // mPtr is not deleted, uniform class does not own mPtr
       mCount = 1;
       update_value(mCount, mPtr);
+    }
+
+    virtual void update() const
+    {
+      if (is_attached())
+        update_value(mCount, mPtr);
+    }
+
+    void update(T *data, GLsizei count = 1)
+    {
+      update_value(count, data);
     }
 
   protected:
