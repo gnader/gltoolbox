@@ -73,12 +73,10 @@ int main(int argc, char **argv)
     glClearColor(1.f, 1.f, 1.f, 1.f);
 
     gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
-    // gltoolbox::Shape2D::draw_quad(200, 0, width - 200, 200);
-    // gltoolbox::Shape2D::color(0.1, 0.1, 0.8);
-    gltoolbox::Shape2D::draw_line(200, 200, 600, 200, 5);
-    // gltoolbox::Shape2D::draw_quad(200, 200, 300, 100, -M_PI / 4.);
-    // gltoolbox::Shape2D::color(0.8, 0.5, 0.1);
-    // gltoolbox::Shape2D::draw_quad(200, 200, width - 200, height - 200);
+    gltoolbox::Shape2D::draw_quad(200, 0, width - 200, 200);
+
+    gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
+    gltoolbox::Shape2D::draw_quad(200, 200, width - 200, height - 200);
 
     glfwSwapBuffers(window);
   }

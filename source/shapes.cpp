@@ -64,18 +64,6 @@ void Shape2D::draw_quad(float x, float y, float w, float h, float theta)
   mPoly->render(4, x - w * 0.5 * 0.41421356237, y - h * 0.5 * 0.41421356237, w * 1.41421356237, h * 1.41421356237, theta, -M_PI_4);
 }
 
-void Shape2D::draw_line(float xa, float ya, float xb, float yb, float thicknes)
-{
-  float vec[2] = {-(yb - ya), xb - xa};
-  float norm = std::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
-  vec[0] = vec[0] / norm;
-  vec[1] = vec[1] / norm;
-
-  float angle = std::atan2(vec[1], vec[0]);
-  draw_quad(xa - 0.5 * thicknes * vec[1], ya + 0.5 * thicknes * vec[0],
-            norm, thicknes, angle);
-}
-
 void Shape2D::init()
 {
   mPoly.reset(new PolygonRenderer());
