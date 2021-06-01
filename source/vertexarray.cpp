@@ -51,6 +51,16 @@ VertexArray::~VertexArray()
   destroy();
 }
 
+void VertexArray::draw_arrays(GLenum mode, GLint first, GLsizei count) const
+{
+  glDrawArrays(mode, first, count);
+}
+
+void VertexArray::draw_arrays(GLenum mode, GLint first, GLsizei count, GLsizei inum) const
+{
+  glDrawArraysInstanced(mode, first, count, inum);
+}
+
 void VertexArray::draw_elements() const
 {
   mIndices.buffer.get()->bind();
@@ -93,9 +103,13 @@ void VertexArray::enable_attribute(const std::string &name, GLint loc) const
   if (has_attribute(name))
   {
     const auto &format = attribute_format(name);
+    const auto &divisor = attribute_divisor(name);
+
     mAttributes.at(name).buffer->bind();
-    glVertexAttribPointer(loc, format.size, format.type, format.normalized, format.stride, 0);
     glEnableVertexAttribArray(loc);
+    glVertexAttribPointer(loc, format.size, format.type, format.normalized, format.stride, 0);
+    if (divisor > 0)
+      glVertexAttribDivisor(loc, divisor);
   }
 }
 

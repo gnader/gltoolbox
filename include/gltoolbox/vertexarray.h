@@ -62,6 +62,7 @@ namespace gltoolbox
     {
       std::shared_ptr<BaseBuffer> buffer;
       AttributeFormat format;
+      GLuint divisor;
     };
 
   public:
@@ -92,6 +93,9 @@ namespace gltoolbox
     //=====================================================
     // Drawcalls
     //=====================================================
+    void draw_arrays(GLenum mode, GLint first, GLsizei count) const;
+    void draw_arrays(GLenum mode, GLint first, GLsizei count, GLsizei inum) const;
+
     void draw_elements() const;
     void draw_elements(GLsizei inum) const;
     void draw_elements(GLuint start, GLuint end) const;
@@ -137,7 +141,7 @@ namespace gltoolbox
     bool add_attribute(const std::string &name,
                        T *data, GLsizei count, GLsizei size,
                        GLenum type, GLsizei stride, GLsizei offset,
-                       GLenum usage = GL_STATIC_DRAW, GLboolean normalized = GL_FALSE)
+                       GLenum usage = GL_STATIC_DRAW, GLboolean normalized = GL_FALSE, GLuint divisor = 0)
     {
       auto search = mAttributes.find(name);
       if (search == mAttributes.end())
@@ -145,6 +149,7 @@ namespace gltoolbox
         AttributeBuffer attr;
         attr.buffer.reset(new Buffer<T>(GL_ARRAY_BUFFER, data, count, usage));
         attr.format = {size, type, stride, offset};
+        attr.divisor = divisor;
 
         mAttributes.insert({name, std::move(attr)});
 
@@ -179,6 +184,16 @@ namespace gltoolbox
     AttributeFormat &attribute_format(const std::string &name)
     {
       return mAttributes.at(name).format;
+    }
+
+    const GLuint &attribute_divisor(const std::string &name) const
+    {
+      return mAttributes.at(name).divisor;
+    }
+
+    GLuint &attribute_divisor(const std::string &name)
+    {
+      return mAttributes.at(name).divisor;
     }
 
     void enable_attribute(const std::string &name, GLint loc) const;
