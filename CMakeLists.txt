@@ -11,18 +11,12 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
 
+## OPTIONS
+#--------------------------------------------------------------------
+option(GLTOOLBOX_BUILD_EXAMPLES ON)
+
 ## DEPENDENCIES
 #-------------------------------------------------------------------- 
-# glfw
-find_package(GLFW REQUIRED)
-if(GLFW_FOUND)
-  include_directories(${GLFW_INCLUDE_DIR})
-  add_definitions(-DGLFW_INCLUDE_NONE)
-  message("glfw:")
-  message("${GLFW_INCLUDE_DIR}")
-  message("${GLFW_LIBRARIES}")
-endif()
-
 # glbinding
 find_package(GLBINDING REQUIRED)
 if(GLBINDING_FOUND)
@@ -54,6 +48,7 @@ set(source
     ${CPP_FOLDER}/buffer.cpp
     ${CPP_FOLDER}/program.cpp
     ${CPP_FOLDER}/shader.cpp
+    ${CPP_FOLDER}/texture.cpp
     ${CPP_FOLDER}/uniform.cpp
     ${CPP_FOLDER}/vertexarray.cpp)
 
@@ -63,6 +58,7 @@ set(header
     ${H_FOLDER}/buffer.h
     ${H_FOLDER}/program.h
     ${H_FOLDER}/shader.h
+    ${H_FOLDER}/texture.h
     ${H_FOLDER}/uniform.h
     ${H_FOLDER}/vertexarray.h)
 
@@ -70,7 +66,19 @@ set(header
 #--------------------------------------------------------------------
 add_library(gltoolbox ${source} ${header})
 
-## EXAMPLES
+## EXAMPLE
 #--------------------------------------------------------------------
-add_executable(demo examples/demo.cpp examples/shapes.cpp)
-target_link_libraries(demo gltoolbox ${GLBINDING_LIBRARIES} ${GLFW_LIBRARIES})
+if(GLTOOLBOX_BUILD_EXAMPLES)
+  # glfw
+  find_package(GLFW REQUIRED)
+  if(GLFW_FOUND)
+    include_directories(${GLFW_INCLUDE_DIR})
+    add_definitions(-DGLFW_INCLUDE_NONE)
+    message("glfw:")
+    message("${GLFW_INCLUDE_DIR}")
+    message("${GLFW_LIBRARIES}")
+  endif()
+  #demo
+  add_executable(demo examples/demo.cpp examples/shapes.cpp)
+  target_link_libraries(demo gltoolbox ${GLBINDING_LIBRARIES} ${GLFW_LIBRARIES})
+endif()
