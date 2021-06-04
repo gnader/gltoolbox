@@ -33,13 +33,45 @@ namespace gltoolbox
 {
   class Texture
   {
+  public:
+    Texture();
+    virtual ~Texture();
+
+    inline GLint id() const;
+    inline GLenum target() const;
+    inline GLuint dimention() const;
+
+    inline void activate(GLuint unit) const { glActiveTexture(GL_TEXTURE0 + unit); }
+
+    inline void bind() const;
+    inline void unbind() const;
+
+    void attach_to();
+    void update();
 
   protected:
+    void create();
+    void destroy();
+
     void set_parameter(const GLenum param) const;
     GLint get_parameter(const GLenum param) const;
 
   protected:
     GLint mId;
+    bool mOwned;
+
+    GLenum mTarget;
+    GLint mDimention;
+
+    // ! texture does not have ownership of the pointer.
+    // ! mPtr will be dangling if it get deleted or get out of scope
+    void *mPtr;
+    GLenum mTexFormat;
+    GLsizei mWdith;
+    GLsizei mHeight; // if texture is 1D -> mHeight and mDepth have value 0
+    GLsizei mDepth;  // if texture is 2D -> mDepth have value 0
+    GLenum mPixFormat;
+    GLenum mPixType;
   };
 }
 

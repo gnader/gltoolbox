@@ -214,7 +214,7 @@ namespace gltoolbox
     //=====================================================
     // Class Attributes
     //=====================================================
-    // ! uniform does not have ownership of the pointer.
+    // ! buffer does not have ownership of the pointer.
     // ! mPtr will be dangling if it get deleted or get out of scope
     T *mPtr;
     GLsizei mNum;
