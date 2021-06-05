@@ -50,7 +50,7 @@ namespace gltoolbox
     Shader &operator=(const Shader &other) = delete;
 
     inline GLuint id() const { return mId; }
-    inline bool is_valid() const { return glIsShader(mId) != 0; }
+    inline bool is_valid() const { return glIsShader(mId) == GL_TRUE; }
 
     inline GLenum type() const { return GLenum(get_parameter(GL_SHADER_TYPE)); }
     std::string type_as_str() const;

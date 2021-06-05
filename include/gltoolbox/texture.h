@@ -34,44 +34,65 @@ namespace gltoolbox
   class Texture
   {
   public:
-    Texture();
+    Texture(GLenum target);
+
     virtual ~Texture();
 
-    inline GLint id() const;
-    inline GLenum target() const;
-    inline GLuint dimention() const;
+    inline GLint id() const { return mId; }
+    inline bool is_valid() const { return glIsTexture(mId) == GL_TRUE; }
+
+    inline GLenum target() const { return mTarget; }
+    inline GLuint dimention() const { return mDimention; }
 
     inline void activate(GLuint unit) const { glActiveTexture(GL_TEXTURE0 + unit); }
 
-    inline void bind() const;
-    inline void unbind() const;
+    inline void bind() const { glBindTexture(target(), id()); }
+    inline void unbind() const { glBindTexture(target(), 0); }
 
-    void attach_to();
-    void update();
+    inline bool is_attached() const { return mPtr != nullptr; }
+
+    void set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps) const;
+    void set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt) const;
+    void set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt, GLenum wrapr) const;
+
+    void generate_mipmaps() const;
+
+    void attach_to(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype);
+    void attach_to(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype);
+    void attach_to(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype);
+
+    void update() const;
+
+    void update(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype);
+    void update(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype);
+    void update(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype);
 
   protected:
     void create();
     void destroy();
 
-    void set_parameter(const GLenum param) const;
+    GLuint texture_dimention() const;
+
     GLint get_parameter(const GLenum param) const;
 
   protected:
-    GLint mId;
+    GLuint mId;
     bool mOwned;
 
     GLenum mTarget;
-    GLint mDimention;
+
+    GLuint mDimention;
+    GLsizei mWdith;
+    GLsizei mHeight; // if texture is 1D -> mHeight and mDepth have value 0
+    GLsizei mDepth;  // if texture is 2D -> mDepth have value 0
+
+    GLenum mTexFormat;
+    GLenum mPixFormat;
+    GLenum mPixType;
 
     // ! texture does not have ownership of the pointer.
     // ! mPtr will be dangling if it get deleted or get out of scope
     void *mPtr;
-    GLenum mTexFormat;
-    GLsizei mWdith;
-    GLsizei mHeight; // if texture is 1D -> mHeight and mDepth have value 0
-    GLsizei mDepth;  // if texture is 2D -> mDepth have value 0
-    GLenum mPixFormat;
-    GLenum mPixType;
   };
 }
 

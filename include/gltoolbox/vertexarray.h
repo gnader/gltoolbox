@@ -82,7 +82,7 @@ namespace gltoolbox
     // Information
     //=====================================================
     inline GLuint id() const { return mId; }
-    inline GLboolean is_valid() const { return glIsVertexArray(mId); }
+    inline bool is_valid() const { return (glIsVertexArray(mId) == GL_TRUE); }
 
     //=====================================================
     // bind/unbind

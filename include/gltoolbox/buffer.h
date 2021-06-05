@@ -50,7 +50,7 @@ namespace gltoolbox
     //=====================================================
 
     inline GLuint id() const { return mId; }
-    inline bool is_valid() const { return glIsBuffer(mId) != 0; }
+    inline bool is_valid() const { return (glIsBuffer(mId) == GL_TRUE); }
 
     inline GLenum target() const { return mTarget; }
     inline GLenum usage() const { return GLenum(get_parameter(GL_BUFFER_USAGE)); }

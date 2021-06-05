@@ -47,7 +47,7 @@ namespace gltoolbox
     Program &operator=(const Program &other) = delete;
 
     inline GLuint id() const { return mId; }
-    inline bool is_valid() const { return glIsProgram(mId) != 0; }
+    inline bool is_valid() const { return (glIsProgram(mId) == GL_TRUE); }
 
     bool link() const;
     inline bool link_status() const { return get_parameter(GL_LINK_STATUS) != 0; }
