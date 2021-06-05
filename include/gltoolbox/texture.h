@@ -36,7 +36,13 @@ namespace gltoolbox
   public:
     Texture(GLenum target);
 
+    Texture(const Texture &other) = delete;
+    Texture(Texture &&temp);
+
     virtual ~Texture();
+
+    Texture &operator=(const Texture &other) = delete;
+    Texture &operator=(Texture &other);
 
     inline GLint id() const { return mId; }
     inline bool is_valid() const { return glIsTexture(mId) == GL_TRUE; }

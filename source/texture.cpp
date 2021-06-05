@@ -36,6 +36,69 @@ Texture::Texture(GLenum target)
   create();
 }
 
+Texture::Texture(Texture &&temp)
+{
+  //delete whatever was there
+  destroy();
+
+  mId = temp.mId;
+  mOwned = temp.mOwned;
+  mTarget = temp.mTarget;
+
+  mDimention = texture_dimention();
+  mWdith = temp.mWdith;
+  mHeight = temp.mHeight;
+  mDepth = temp.mDepth;
+
+  mTexFormat = temp.mTexFormat;
+  mPixFormat = temp.mPixFormat;
+  mPixType = temp.mPixType;
+
+  mPtr = temp.mPtr;
+
+  temp.mId = 0;
+  temp.mOwned = false;
+  temp.mPtr = nullptr;
+  temp.mWdith = 0;
+  temp.mHeight = 0;
+  temp.mDepth = 0;
+}
+
+Texture::~Texture()
+{
+  destroy();
+}
+
+Texture &Texture::operator=(Texture &other)
+{
+  //delete whatever was there
+  destroy();
+
+  mId = other.mId;
+  mOwned = other.mOwned;
+  mTarget = other.mTarget;
+
+  mDimention = texture_dimention();
+  mWdith = other.mWdith;
+  mHeight = other.mHeight;
+  mDepth = other.mDepth;
+
+  mTexFormat = other.mTexFormat;
+  mPixFormat = other.mPixFormat;
+  mPixType = other.mPixType;
+
+  mPtr = other.mPtr;
+
+  other.mId = 0;
+  other.mOwned = false;
+  other.mPtr = nullptr;
+  other.mWdith = 0;
+  other.mHeight = 0;
+  other.mDepth = 0;
+
+  return *this;
+}
+
 void Texture::set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps) const
 {
   bind();
@@ -175,6 +238,11 @@ void Texture::destroy()
     glDeleteTextures(1, &mId);
     mId = 0;
     mOwned = false;
+
+    mPtr = nullptr;
+    mWdith = 0;
+    mHeight = 0;
+    mDepth = 0;
   }
 }
 
@@ -192,6 +260,8 @@ GLuint Texture::texture_dimention() const
   case GL_TEXTURE_3D:
     return 3;
   }
+
+  return -1;
 }
 
 GLint Texture::get_parameter(const GLenum param) const
