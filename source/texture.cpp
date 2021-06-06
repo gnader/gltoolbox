@@ -28,12 +28,42 @@
 
 using namespace gltoolbox;
 
+GLuint Texture::dimention(GLenum target)
+{
+  switch (target)
+  {
+  case GL_TEXTURE_1D:
+  case GL_TEXTURE_BUFFER:
+    return 1;
+  case GL_TEXTURE_2D:
+  case GL_TEXTURE_RECTANGLE:
+  case GL_TEXTURE_2D_MULTISAMPLE:
+    return 2;
+  case GL_TEXTURE_3D:
+    return 3;
+  }
+
+  return -1;
+}
+
 Texture::Texture(GLenum target)
     : mId(0), mOwned(false), mTarget(target),
-      mPtr(nullptr), mWdith(0), mHeight(0), mDepth(0)
+      mPtr(nullptr), mWidth(0), mHeight(0), mDepth(0)
 {
-  mDimention = texture_dimention();
+  mDimention = Texture::dimention(target);
   create();
+  set_texture_options(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);
+}
+
+Texture::Texture(GLenum target,
+                 GLenum minfunc, GLenum magfunc,
+                 GLenum wraps = GL_REPEAT, GLenum wrapt = GL_REPEAT, GLenum wrapr = GL_REPEAT)
+    : mId(0), mOwned(false), mTarget(target),
+      mPtr(nullptr), mWidth(0), mHeight(0), mDepth(0)
+{
+  mDimention = Texture::dimention(target);
+  create();
+  set_texture_options(minfunc, magfunc, wraps, wrapt, wrapr);
 }
 
 Texture::Texture(Texture &&temp)
@@ -45,8 +75,8 @@ Texture::Texture(Texture &&temp)
   mOwned = temp.mOwned;
   mTarget = temp.mTarget;
 
-  mDimention = texture_dimention();
-  mWdith = temp.mWdith;
+  mDimention = Texture::dimention(mTarget);
+  mWidth = temp.mWidth;
   mHeight = temp.mHeight;
   mDepth = temp.mDepth;
 
@@ -59,7 +89,7 @@ Texture::Texture(Texture &&temp)
   temp.mId = 0;
   temp.mOwned = false;
   temp.mPtr = nullptr;
-  temp.mWdith = 0;
+  temp.mWidth = 0;
   temp.mHeight = 0;
   temp.mDepth = 0;
 }
@@ -78,8 +108,8 @@ Texture &Texture::operator=(Texture &other)
   mOwned = other.mOwned;
   mTarget = other.mTarget;
 
-  mDimention = texture_dimention();
-  mWdith = other.mWdith;
+  mDimention = Texture::dimention(mTarget);
+  mWidth = other.mWidth;
   mHeight = other.mHeight;
   mDepth = other.mDepth;
 
@@ -92,7 +122,7 @@ Texture &Texture::operator=(Texture &other)
   other.mId = 0;
   other.mOwned = false;
   other.mPtr = nullptr;
-  other.mWdith = 0;
+  other.mWidth = 0;
   other.mHeight = 0;
   other.mDepth = 0;
 
@@ -144,7 +174,7 @@ void Texture::generate_mipmaps() const
 void Texture::attach_to(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype)
 {
   mPtr = ptr;
-  mWdith = width;
+  mWidth = width;
   mTexFormat = texformat;
   mPixFormat = pixformat;
   mPixType = pixtype;
@@ -155,7 +185,7 @@ void Texture::attach_to(void *ptr, GLsizei width, GLenum texformat, GLenum pixfo
 void Texture::attach_to(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype)
 {
   mPtr = ptr;
-  mWdith = width;
+  mWidth = width;
   mHeight = height;
   mTexFormat = texformat;
   mPixFormat = pixformat;
@@ -167,7 +197,7 @@ void Texture::attach_to(void *ptr, GLsizei width, GLsizei height, GLenum texform
 void Texture::attach_to(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype)
 {
   mPtr = ptr;
-  mWdith = width;
+  mWidth = width;
   mHeight = height;
   mDepth = depth;
   mTexFormat = texformat;
@@ -182,19 +212,19 @@ void Texture::update() const
   if (is_attached())
   {
     bind();
-    if (dimention() == 1)
-      glTexImage1D(target(), 0, mTexFormat, mWdith, 0, mPixFormat, mPixType, mPtr);
-    else if (dimention() == 2)
-      glTexImage2D(target(), 0, mTexFormat, mWdith, mHeight, 0, mPixFormat, mPixType, mPtr);
-    else if (dimention() == 3)
-      glTexImage3D(target(), 0, mTexFormat, mWdith, mHeight, mDepth, 0, mPixFormat, mPixType, mPtr);
+    if (dim() == 1)
+      glTexImage1D(target(), 0, mTexFormat, mWidth, 0, mPixFormat, mPixType, mPtr);
+    else if (dim() == 2)
+      glTexImage2D(target(), 0, mTexFormat, mWidth, mHeight, 0, mPixFormat, mPixType, mPtr);
+    else if (dim() == 3)
+      glTexImage3D(target(), 0, mTexFormat, mWidth, mHeight, mDepth, 0, mPixFormat, mPixType, mPtr);
     unbind();
   }
 }
 
-void Texture::update(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype)
+void Texture::update(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype) const
 {
-  if (dimention() == 1)
+  if (dim() == 1)
   {
     bind();
     glTexImage1D(target(), 0, texformat, width, 0, pixformat, pixtype, ptr);
@@ -202,9 +232,9 @@ void Texture::update(void *ptr, GLsizei width, GLenum texformat, GLenum pixforma
   }
 }
 
-void Texture::update(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype)
+void Texture::update(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype) const
 {
-  if (dimention() == 2)
+  if (dim() == 2)
   {
     bind();
     glTexImage2D(target(), 0, texformat, width, height, 0, pixformat, pixtype, ptr);
@@ -212,14 +242,41 @@ void Texture::update(void *ptr, GLsizei width, GLsizei height, GLenum texformat,
   }
 }
 
-void Texture::update(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype)
+void Texture::update(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype) const
 {
-  if (dimention() == 3)
+  if (dim() == 3)
   {
     bind();
     glTexImage3D(target(), 0, texformat, width, height, depth, 0, pixformat, pixtype, ptr);
     unbind();
   }
+}
+
+void Texture::get()
+{
+  if (is_attached())
+  {
+    bind();
+    glGetTexImage(target(), 0, format(), type(), mPtr);
+    unbind();
+  }
+}
+
+void Texture::get(void *ptr)
+{
+  if (is_attached())
+  {
+    bind();
+    glGetTexImage(target(), 0, format(), type(), ptr);
+    unbind();
+  }
+}
+
+void Texture::get(void *ptr, GLenum format, GLenum type)
+{
+  bind();
+  glGetTexImage(target(), 0, format, type, ptr);
+  unbind();
 }
 
 void Texture::create()
@@ -240,28 +297,10 @@ void Texture::destroy()
     mOwned = false;
 
     mPtr = nullptr;
-    mWdith = 0;
+    mWidth = 0;
     mHeight = 0;
     mDepth = 0;
   }
-}
-
-GLuint Texture::texture_dimention() const
-{
-  switch (target())
-  {
-  case GL_TEXTURE_1D:
-  case GL_TEXTURE_BUFFER:
-    return 1;
-  case GL_TEXTURE_2D:
-  case GL_TEXTURE_RECTANGLE:
-  case GL_TEXTURE_2D_MULTISAMPLE:
-    return 2;
-  case GL_TEXTURE_3D:
-    return 3;
-  }
-
-  return -1;
 }
 
 GLint Texture::get_parameter(const GLenum param) const

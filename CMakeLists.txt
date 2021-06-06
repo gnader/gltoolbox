@@ -46,6 +46,7 @@ set(H_FOLDER ${PROJECT_SOURCE_DIR}/include/gltoolbox)
 
 set(source
     ${CPP_FOLDER}/buffer.cpp
+    ${CPP_FOLDER}/framebuffer.cpp
     ${CPP_FOLDER}/program.cpp
     ${CPP_FOLDER}/shader.cpp
     ${CPP_FOLDER}/texture.cpp
@@ -56,6 +57,7 @@ set(header
     ${H_FOLDER}/gl.h
     ${H_FOLDER}/gltoolbox.h
     ${H_FOLDER}/buffer.h
+    ${H_FOLDER}/framebuffer.h
     ${H_FOLDER}/program.h
     ${H_FOLDER}/shader.h
     ${H_FOLDER}/texture.h

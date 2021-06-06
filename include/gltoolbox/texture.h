@@ -34,7 +34,18 @@ namespace gltoolbox
   class Texture
   {
   public:
+    inline static void activate(GLuint unit = 0)
+    {
+      glActiveTexture(GL_TEXTURE0 + unit);
+    }
+
+    static GLuint dimention(GLenum target);
+
+  public:
     Texture(GLenum target);
+    Texture(GLenum target,
+            GLenum minfunc, GLenum magfunc,
+            GLenum wraps, GLenum wrapt, GLenum wrapr);
 
     Texture(const Texture &other) = delete;
     Texture(Texture &&temp);
@@ -48,9 +59,15 @@ namespace gltoolbox
     inline bool is_valid() const { return glIsTexture(mId) == GL_TRUE; }
 
     inline GLenum target() const { return mTarget; }
-    inline GLuint dimention() const { return mDimention; }
+    inline GLuint dim() const { return mDimention; }
 
-    inline void activate(GLuint unit) const { glActiveTexture(GL_TEXTURE0 + unit); }
+    inline GLsizei width() const { return mWidth; }
+    inline GLsizei height() const { return mHeight; }
+    inline GLsizei depth() const { return mDepth; }
+
+    inline GLenum internal_format() const { return mTexFormat; }
+    inline GLenum format() const { return mPixFormat; }
+    inline GLenum type() const { return mPixType; }
 
     inline void bind() const { glBindTexture(target(), id()); }
     inline void unbind() const { glBindTexture(target(), 0); }
@@ -69,15 +86,17 @@ namespace gltoolbox
 
     void update() const;
 
-    void update(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype);
-    void update(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype);
-    void update(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype);
+    void update(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
+    void update(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
+    void update(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
+
+    void get();
+    void get(void *ptr);
+    void get(void *ptr, GLenum format, GLenum type);
 
   protected:
     void create();
     void destroy();
-
-    GLuint texture_dimention() const;
 
     GLint get_parameter(const GLenum param) const;
 
@@ -88,7 +107,7 @@ namespace gltoolbox
     GLenum mTarget;
 
     GLuint mDimention;
-    GLsizei mWdith;
+    GLsizei mWidth;
     GLsizei mHeight; // if texture is 1D -> mHeight and mDepth have value 0
     GLsizei mDepth;  // if texture is 2D -> mDepth have value 0
 
