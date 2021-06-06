@@ -23,3 +23,40 @@
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
   */
+
+#include <gltoolbox/framebuffer.h>
+using namespace gltoolbox;
+
+GLenum FrameBuffer::status() const
+{
+  GLenum result;
+  bind();
+  result = glCheckFramebufferStatus(target());
+  unbind();
+
+  return result;
+}
+
+std::string FrameBuffer::status_as_string() const
+{
+  GLenum fbo_status = status();
+  switch (fbo_status)
+  {
+  case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+    return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+  case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+    return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+  case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+    return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
+  case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+    return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
+  case GL_FRAMEBUFFER_UNSUPPORTED:
+    return "GL_FRAMEBUFFER_UNSUPPORTED";
+  }
+
+  return "UNKNOWN_ERROR";
+}
+
+void FrameBuffer::attach(GLenum target)
+{
+}

@@ -25,7 +25,6 @@
   */
 
 #include <gltoolbox/texture.h>
-
 using namespace gltoolbox;
 
 GLuint Texture::dimention(GLenum target)
@@ -43,7 +42,7 @@ GLuint Texture::dimention(GLenum target)
     return 3;
   }
 
-  return -1;
+  return -1; // should not arrive here
 }
 
 Texture::Texture(GLenum target)

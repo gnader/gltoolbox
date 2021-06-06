@@ -35,7 +35,7 @@ namespace gltoolbox
   class FrameBuffer
   {
   public:
-    FrameBuffer(GLenum target, GLuint width, GLuint height);
+    FrameBuffer(GLenum target);
 
     FrameBuffer(const FrameBuffer &other) = delete;
     FrameBuffer(FrameBuffer &&temp);
@@ -50,11 +50,11 @@ namespace gltoolbox
 
     inline GLenum target() const { return mTarget; }
 
-    inline GLuint width() const { return mWidth; }
-    inline GLuint height() const { return mHeight; }
+    inline void bind() const { glBindFramebuffer(mTarget, mId); }
+    inline void unbind() const { glBindFramebuffer(mTarget, 0); }
 
-    inline void bind() const;
-    inline void unbind() const;
+    GLenum status() const;
+    std::string status_as_string() const;
 
     void attach(GLenum target);
 
@@ -68,8 +68,7 @@ namespace gltoolbox
 
     GLenum mTarget;
 
-    GLuint mWidth;
-    GLuint mHeight;
+    std::unordered_map<GLenum, std::shared_ptr<Texture>> mAttachements;
   };
 }
 
