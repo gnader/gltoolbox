@@ -45,7 +45,7 @@ namespace gltoolbox
     Texture(GLenum target);
     Texture(GLenum target,
             GLenum minfunc, GLenum magfunc,
-            GLenum wraps, GLenum wrapt, GLenum wrapr);
+            GLenum wraps = GL_REPEAT, GLenum wrapt = GL_REPEAT, GLenum wrapr = GL_REPEAT);
 
     Texture(const Texture &other) = delete;
     Texture(Texture &&temp);

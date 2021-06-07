@@ -43,7 +43,6 @@ namespace gltoolbox
     virtual ~FrameBuffer();
 
     FrameBuffer &operator=(const FrameBuffer &other) = delete;
-    FrameBuffer &operator=(FrameBuffer &other);
 
     inline GLuint id() const { return mId; }
     inline bool is_valid() const { return (glIsFramebuffer(mId) == GL_TRUE); }
@@ -56,7 +55,15 @@ namespace gltoolbox
     GLenum status() const;
     std::string status_as_string() const;
 
-    void attach(GLenum target);
+    bool has_attachment(GLenum attachment) const;
+
+    bool attach(GLenum attachment,
+                GLenum target, GLsizei width, GLsizei height,
+                GLenum texformat, GLenum pixformat, GLenum pixtype);
+
+    bool remove_attachment(GLenum attachment);
+
+    std::shared_ptr<Texture> texture(GLenum attachment) const;
 
   protected:
     void create();
@@ -68,7 +75,7 @@ namespace gltoolbox
 
     GLenum mTarget;
 
-    std::unordered_map<GLenum, std::shared_ptr<Texture>> mAttachements;
+    std::unordered_map<GLenum, std::shared_ptr<Texture>> mAttachments;
   };
 }
 

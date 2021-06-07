@@ -56,7 +56,7 @@ Texture::Texture(GLenum target)
 
 Texture::Texture(GLenum target,
                  GLenum minfunc, GLenum magfunc,
-                 GLenum wraps = GL_REPEAT, GLenum wrapt = GL_REPEAT, GLenum wrapr = GL_REPEAT)
+                 GLenum wraps, GLenum wrapt, GLenum wrapr)
     : mId(0), mOwned(false), mTarget(target),
       mPtr(nullptr), mWidth(0), mHeight(0), mDepth(0)
 {
