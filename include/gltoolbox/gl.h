@@ -35,6 +35,8 @@ using namespace gl;
 
 namespace gltoolbox
 {
+  typedef glbinding::GetProcAddress ProcAddress;
+
   class GL
   {
   public:
@@ -42,7 +44,7 @@ namespace gltoolbox
     GL() = delete;
 
   public:
-    static void initilize(glbinding::GetProcAddress functionPointer, bool resolve = true)
+    static void initilize(ProcAddress functionPointer, bool resolve = true)
     {
       glbinding::Binding::initialize(functionPointer, resolve);
     }

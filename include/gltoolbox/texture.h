@@ -72,7 +72,7 @@ namespace gltoolbox
     inline void bind() const { glBindTexture(target(), id()); }
     inline void unbind() const { glBindTexture(target(), 0); }
 
-    inline bool is_attached() const { return mPtr != nullptr; }
+    inline bool is_attached() const { return mIsAttached; }
 
     void set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps) const;
     void set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt) const;
@@ -86,13 +86,13 @@ namespace gltoolbox
 
     void update() const;
 
-    void update(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
-    void update(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
-    void update(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
+    void upload(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
+    void upload(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
+    void upload(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
 
-    void get();
-    void get(void *ptr);
-    void get(void *ptr, GLenum format, GLenum type);
+    void download();
+    void download(void *ptr);
+    void download(void *ptr, GLenum format, GLenum type);
 
   protected:
     void create();
@@ -118,6 +118,7 @@ namespace gltoolbox
     // ! texture does not have ownership of the pointer.
     // ! mPtr will be dangling if it get deleted or get out of scope
     void *mPtr;
+    bool mIsAttached;
   };
 }
 

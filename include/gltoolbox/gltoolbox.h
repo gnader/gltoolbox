@@ -30,8 +30,10 @@
 #include "gl.h"
 
 #include "buffer.h"
+#include "framebuffer.h"
 #include "program.h"
 #include "shader.h"
+#include "texture.h"
 #include "uniform.h"
 #include "vertexarray.h"
 

@@ -28,7 +28,11 @@
 
 #include <gltoolbox/gltoolbox.h>
 #include <GLFW/glfw3.h>
+
 #include "shapes.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -59,27 +63,40 @@ int main(int argc, char **argv)
 
   int width, height;
 
-  while (!glfwWindowShouldClose(window))
-  {
-    glfwPollEvents();
+  gltoolbox::FrameBuffer fbo(GL_FRAMEBUFFER);
+  fbo.attach(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 1000, 1000, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
 
-    glfwMakeContextCurrent(window);
-    glbinding::Binding::useCurrentContext();
+  std::vector<uint8_t> data;
+  data.resize(1000 * 1000 * 3);
 
-    glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
+  // while (!glfwWindowShouldClose(window))
+  // {
+  glfwPollEvents();
 
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(1.f, 1.f, 1.f, 1.f);
+  glfwMakeContextCurrent(window);
+  glbinding::Binding::useCurrentContext();
 
-    gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
-    gltoolbox::Shape2D::draw_quad(200, 0, width - 200, 200);
+  glfwGetFramebufferSize(window, &width, &height);
+  glViewport(0, 0, width, height);
 
-    gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
-    gltoolbox::Shape2D::draw_quad(200, 200, width - 200, height - 200);
+  fbo.bind();
+  glClear(GL_COLOR_BUFFER_BIT);
+  glClearColor(1.f, 1.f, 1.f, 0.f);
 
-    glfwSwapBuffers(window);
-  }
+  gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
+  gltoolbox::Shape2D::draw_quad(0, 0, width, 200);
+
+  gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
+  gltoolbox::Shape2D::draw_quad(200, 200, 400, 600);
+  fbo.unbind();
+
+  fbo.texture(GL_COLOR_ATTACHMENT0)->download(data.data());
+
+  // stbi_flip_vertically_on_write(1);
+  stbi_write_png("test.png", 1000, 1000, 3, data.data(), 0);
+
+  // glfwSwapBuffers(window);
+  // }
 
   glfwDestroyWindow(window);
   glfwTerminate();

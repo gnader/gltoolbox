@@ -221,7 +221,7 @@ void Texture::update() const
   }
 }
 
-void Texture::update(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype) const
+void Texture::upload(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype) const
 {
   if (dim() == 1)
   {
@@ -231,7 +231,7 @@ void Texture::update(void *ptr, GLsizei width, GLenum texformat, GLenum pixforma
   }
 }
 
-void Texture::update(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype) const
+void Texture::upload(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype) const
 {
   if (dim() == 2)
   {
@@ -241,7 +241,7 @@ void Texture::update(void *ptr, GLsizei width, GLsizei height, GLenum texformat,
   }
 }
 
-void Texture::update(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype) const
+void Texture::upload(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype) const
 {
   if (dim() == 3)
   {
@@ -251,9 +251,9 @@ void Texture::update(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GL
   }
 }
 
-void Texture::get()
+void Texture::download()
 {
-  if (is_attached())
+  if (mPtr != nullptr)
   {
     bind();
     glGetTexImage(target(), 0, format(), type(), mPtr);
@@ -261,7 +261,7 @@ void Texture::get()
   }
 }
 
-void Texture::get(void *ptr)
+void Texture::download(void *ptr)
 {
   if (is_attached())
   {
@@ -271,7 +271,7 @@ void Texture::get(void *ptr)
   }
 }
 
-void Texture::get(void *ptr, GLenum format, GLenum type)
+void Texture::download(void *ptr, GLenum format, GLenum type)
 {
   bind();
   glGetTexImage(target(), 0, format, type, ptr);
