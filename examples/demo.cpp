@@ -66,6 +66,8 @@ int main(int argc, char **argv)
   gltoolbox::FrameBuffer fbo(GL_FRAMEBUFFER);
   fbo.attach(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 1000, 1000, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
 
+  std::cout << fbo.status_as_string() << std::endl;
+
   std::vector<uint8_t> data;
   data.resize(1000 * 1000 * 3);
 
@@ -79,12 +81,14 @@ int main(int argc, char **argv)
   glfwGetFramebufferSize(window, &width, &height);
   glViewport(0, 0, width, height);
 
+  std::cout << "rendering into framebuffer" << std::endl;
+
   fbo.bind();
-  glClear(GL_COLOR_BUFFER_BIT);
-  glClearColor(1.f, 1.f, 1.f, 0.f);
+  gltoolbox::GL::clear(GL_COLOR_BUFFER_BIT);
+  gltoolbox::GL::clear_color(255.f, 1.f);
 
   gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
-  gltoolbox::Shape2D::draw_quad(0, 0, width, 200);
+  gltoolbox::Shape2D::draw_quad(0, 0, 600, 200);
 
   gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
   gltoolbox::Shape2D::draw_quad(200, 200, 400, 600);
@@ -92,10 +96,10 @@ int main(int argc, char **argv)
 
   fbo.texture(GL_COLOR_ATTACHMENT0)->download(data.data());
 
-  // stbi_flip_vertically_on_write(1);
+  stbi_flip_vertically_on_write(1);
   stbi_write_png("test.png", 1000, 1000, 3, data.data(), 0);
 
-  // glfwSwapBuffers(window);
+  glfwSwapBuffers(window);
   // }
 
   glfwDestroyWindow(window);

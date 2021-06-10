@@ -84,6 +84,7 @@ Texture::Texture(Texture &&temp)
   mPixType = temp.mPixType;
 
   mPtr = temp.mPtr;
+  mIsAttached = temp.mIsAttached;
 
   temp.mId = 0;
   temp.mOwned = false;
@@ -117,6 +118,7 @@ Texture &Texture::operator=(Texture &other)
   mPixType = other.mPixType;
 
   mPtr = other.mPtr;
+  mIsAttached = other.mIsAttached;
 
   other.mId = 0;
   other.mOwned = false;
@@ -177,6 +179,7 @@ void Texture::attach_to(void *ptr, GLsizei width, GLenum texformat, GLenum pixfo
   mTexFormat = texformat;
   mPixFormat = pixformat;
   mPixType = pixtype;
+  mIsAttached = true;
 
   update();
 }
@@ -189,6 +192,7 @@ void Texture::attach_to(void *ptr, GLsizei width, GLsizei height, GLenum texform
   mTexFormat = texformat;
   mPixFormat = pixformat;
   mPixType = pixtype;
+  mIsAttached = true;
 
   update();
 }
@@ -202,6 +206,7 @@ void Texture::attach_to(void *ptr, GLsizei width, GLsizei height, GLsizei depth,
   mTexFormat = texformat;
   mPixFormat = pixformat;
   mPixType = pixtype;
+  mIsAttached = true;
 
   update();
 }

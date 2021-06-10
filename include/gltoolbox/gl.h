@@ -63,6 +63,19 @@ namespace gltoolbox
     static void get_viewport(GLint *vp) { glGetIntegerv(GL_VIEWPORT, vp); }
 
     //=====================================================
+    // Whole Framebuffer Operations
+    //=====================================================
+
+    static void clear(ClearBufferMask bitfield) { glClear(bitfield); }
+
+    static void clear_color(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
+    static void clear_color(float l, float a = 1.f) { glClearColor(l, l, l, a); }
+    static void clear_color(float *rgba) { glClearColor(rgba[0], rgba[1], rgba[2], rgba[3]); }
+
+    static void clear_depth(float d) { glClearDepth(d); }
+    static void clear_stencil(int s) { glClearStencil(s); }
+
+    //=====================================================
     // Per-Fragment Operations
     //=====================================================
 

@@ -13,7 +13,7 @@ endif()
 
 ## OPTIONS
 #--------------------------------------------------------------------
-option(GLTOOLBOX_BUILD_EXAMPLES ON)
+option(GLTOOLBOX_BUILD_DEMO "build the demo program" ON)
 
 ## DEPENDENCIES
 #-------------------------------------------------------------------- 
@@ -69,8 +69,8 @@ set(header
 add_library(gltoolbox ${source} ${header})
 
 ## EXAMPLE
-#--------------------------------------------------------------------
-# if(GLTOOLBOX_BUILD_EXAMPLES)
+# --------------------------------------------------------------------
+if(GLTOOLBOX_BUILD_DEMO)
   # glfw
   find_package(GLFW REQUIRED)
   if(GLFW_FOUND)
@@ -83,4 +83,5 @@ add_library(gltoolbox ${source} ${header})
   #demo
   add_executable(demo examples/demo.cpp examples/shapes.cpp)
   target_link_libraries(demo gltoolbox ${GLBINDING_LIBRARIES} ${GLFW_LIBRARIES})
-# endif()
+endif()
+unset(${GLTOOLBOX_BUILD_DEMO})

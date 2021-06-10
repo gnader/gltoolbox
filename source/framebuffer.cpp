@@ -78,6 +78,8 @@ std::string FrameBuffer::status_as_string() const
     return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
   case GL_FRAMEBUFFER_UNSUPPORTED:
     return "GL_FRAMEBUFFER_UNSUPPORTED";
+  case GL_FRAMEBUFFER_COMPLETE:
+    return "GL_FRAMEBUFFER_COMPLETE";
   }
 
   return "UNKNOWN_ERROR";
