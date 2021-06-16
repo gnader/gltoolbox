@@ -61,6 +61,9 @@ namespace gltoolbox
     //=====================================================
 
     static void get_viewport(GLint *vp) { glGetIntegerv(GL_VIEWPORT, vp); }
+    static void set_viewport(GLint *vp) { glViewport(vp[0], vp[1], vp[2], vp[3]); }
+    static void set_viewport(GLsizei w, GLsizei h) { glViewport(0, 0, w, h); }
+    static void set_viewport(GLint x, GLint y, GLsizei w, GLsizei h) { glViewport(x, y, w, h); }
 
     //=====================================================
     // Whole Framebuffer Operations
