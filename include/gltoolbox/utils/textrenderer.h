@@ -24,19 +24,44 @@
   * SOFTWARE.
   */
 
-#ifndef __GLTOOLBOX_H__
-#define __GLTOOLBOX_H__
+#ifndef __GLTOOLBOX_TEXTRENDERER_H__
+#define __GLTOOLBOX_TEXTRENDERER_H__
 
-#include "gl.h"
+#include <map>
+#include <unordered_map>
 
-#include "buffer.h"
-#include "framebuffer.h"
-#include "program.h"
-#include "shader.h"
-#include "texture.h"
-#include "uniform.h"
-#include "vertexarray.h"
+namespace gltoolbox
+{
+  class TextRenderer
+  {
+  private:
+    struct Character
+    {
+      int width, height;
+      int bearingX, bearingY;
+      unsigned int advance;
+    };
 
-#include "./utils/textrenderer.h"
+    struct Font
+    {
+      unsigned int textureID;
+      std::map<char, Character> characterlist;
 
-#endif // __GLTOOLBOX_H__
+      Font() : textureID(0) {} //default constructor
+    };
+
+  public:
+    TextRenderer();
+    virtual ~TextRenderer();
+
+    //load font data, sets loaded font to current
+    bool load_font(const std::string &filename, unsigned int size = 48);
+
+  protected:
+    std::string mCurrFont;
+    float mCurrSize;
+    std::unordered_map<std::string, Font> mFonts;
+  };
+}
+
+#endif

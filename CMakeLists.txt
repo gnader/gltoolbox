@@ -19,20 +19,17 @@ option(GLTOOLBOX_BUILD_DEMO "build the demo program" ON)
 #-------------------------------------------------------------------- 
 # glbinding
 find_package(GLBINDING REQUIRED)
-if(GLBINDING_FOUND)
-  include_directories(${GLBINDING_INCLUDE_DIR})
-  message("glbinding:")
-  message("${GLBINDING_INCLUDE_DIR}")
-  message("${GLBINDING_LIBRARIES}")
-endif()
+include_directories(${GLBINDING_INCLUDE_DIR})
+
+#freetype
+find_package(Freetype REQUIRED)
+include_directories(${FREETYPE_INCLUDE_DIRS})
 
 # eigen
 find_package(Eigen3)
 if(EIGEN3_FOUND)
   include_directories(${EIGEN3_INCLUDE_DIR})
   add_definitions(-DGLTOOLBOX_ENABLE_EIGEN)
-  message("eigen:")
-  message("${EIGEN3_INCLUDE_DIR}")
 endif()
 
 ## INCLUDES
@@ -51,7 +48,8 @@ set(source
     ${CPP_FOLDER}/shader.cpp
     ${CPP_FOLDER}/texture.cpp
     ${CPP_FOLDER}/uniform.cpp
-    ${CPP_FOLDER}/vertexarray.cpp)
+    ${CPP_FOLDER}/vertexarray.cpp
+    ${CPP_FOLDER}/utils/textrenderer.cpp)
 
 set(header
     ${H_FOLDER}/gl.h
@@ -62,7 +60,9 @@ set(header
     ${H_FOLDER}/shader.h
     ${H_FOLDER}/texture.h
     ${H_FOLDER}/uniform.h
-    ${H_FOLDER}/vertexarray.h)
+    ${H_FOLDER}/vertexarray.h
+    ${H_FOLDER}/utils/textrenderer.h
+)
 
 ## GLTOOLBOX
 #--------------------------------------------------------------------
@@ -76,12 +76,9 @@ if(GLTOOLBOX_BUILD_DEMO)
   if(GLFW_FOUND)
     include_directories(${GLFW_INCLUDE_DIR})
     add_definitions(-DGLFW_INCLUDE_NONE)
-    message("glfw:")
-    message("${GLFW_INCLUDE_DIR}")
-    message("${GLFW_LIBRARIES}")
   endif()
   #demo
   add_executable(demo examples/demo.cpp examples/shapes.cpp)
-  target_link_libraries(demo gltoolbox ${GLBINDING_LIBRARIES} ${GLFW_LIBRARIES})
+  target_link_libraries(demo gltoolbox ${GLBINDING_LIBRARIES} ${FREETYPE_LIBRARIES} ${GLFW_LIBRARIES})
 endif()
 unset(${GLTOOLBOX_BUILD_DEMO})

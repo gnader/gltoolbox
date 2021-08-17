@@ -27,12 +27,13 @@
 #include <iostream>
 
 #include <gltoolbox/gltoolbox.h>
+#include <gltoolbox/utils/textrenderer.h>
 #include <GLFW/glfw3.h>
 
 #include "shapes.h"
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+// #define STB_IMAGE_WRITE_IMPLEMENTATION
+// #include "stb_image_write.h"
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -63,44 +64,47 @@ int main(int argc, char **argv)
 
   int width, height;
 
-  gltoolbox::FrameBuffer fbo(GL_FRAMEBUFFER);
-  fbo.attach(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 1000, 1000, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+  gltoolbox::TextRenderer txt_renderer;
+  txt_renderer.load_font("./Arial_italic.ttf");
 
-  std::cout << fbo.status_as_string() << std::endl;
+  // gltoolbox::FrameBuffer fbo(GL_FRAMEBUFFER);
+  // fbo.attach(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 1000, 1000, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+
+  // std::cout << fbo.status_as_string() << std::endl;
 
   std::vector<uint8_t> data;
   data.resize(1000 * 1000 * 3);
 
-  // while (!glfwWindowShouldClose(window))
-  // {
-  glfwPollEvents();
+  while (!glfwWindowShouldClose(window))
+  {
+    glfwPollEvents();
 
-  glfwMakeContextCurrent(window);
-  glbinding::Binding::useCurrentContext();
+    glfwMakeContextCurrent(window);
+    glbinding::Binding::useCurrentContext();
 
-  glfwGetFramebufferSize(window, &width, &height);
-  glViewport(0, 0, width, height);
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
 
-  std::cout << "rendering into framebuffer" << std::endl;
+    // std::cout << "rendering into framebuffer" << std::endl;
 
-  fbo.bind();
-  gltoolbox::GL::clear(GL_COLOR_BUFFER_BIT);
-  gltoolbox::GL::clear_color(255.f, 1.f);
+    // fbo.bind();
+    gltoolbox::GL::clear(GL_COLOR_BUFFER_BIT);
+    gltoolbox::GL::clear_color(255.f, 1.f);
 
-  gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
-  gltoolbox::Shape2D::draw_quad(0, 0, 600, 200);
+    gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
+    gltoolbox::Shape2D::draw_quad(0, 0, 600, 200);
 
-  gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
-  gltoolbox::Shape2D::draw_quad(200, 200, 400, 600);
-  fbo.unbind();
+    gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
+    gltoolbox::Shape2D::draw_quad(200, 200, 400, 600);
+    // fbo.unbind();
 
-  fbo.texture(GL_COLOR_ATTACHMENT0)->download(data.data());
+    // fbo.texture(GL_COLOR_ATTACHMENT0)->download(data.data());
 
-  stbi_flip_vertically_on_write(1);
-  stbi_write_png("test.png", 1000, 1000, 3, data.data(), 0);
+    // stbi_flip_vertically_on_write(1);
+    // stbi_write_png("test.png", 1000, 1000, 3, data.data(), 0);
 
-  glfwSwapBuffers(window);
-  // }
+    glfwSwapBuffers(window);
+  }
 
   glfwDestroyWindow(window);
   glfwTerminate();
