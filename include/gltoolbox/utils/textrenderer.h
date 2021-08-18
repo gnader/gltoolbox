@@ -29,6 +29,10 @@
 
 #include <map>
 #include <unordered_map>
+#include <vector>
+
+#include <gltoolbox/program.h>
+#include <gltoolbox/vertexarray.h>
 
 namespace gltoolbox
 {
@@ -37,9 +41,9 @@ namespace gltoolbox
   private:
     struct Character
     {
-      int width, height;
-      int bearingX, bearingY;
-      unsigned int advance;
+      uint32_t width, height;
+      int32_t bearingX, bearingY;
+      int32_t advance;
     };
 
     struct Font
@@ -51,16 +55,46 @@ namespace gltoolbox
     };
 
   public:
-    TextRenderer();
+    TextRenderer(bool doInit = false);
     virtual ~TextRenderer();
 
-    //load font data, sets loaded font to current
+    inline void set_font_size(float size) { mCurrSize = size; }
+    inline void set_font_color(const std::array<float, 3> &rgb) { mCurrRGB = rgb; }
+    inline void set_font(const std::string &fontname)
+    {
+      if (mFonts.find(fontname) != mFonts.end())
+        mCurrFont = fontname;
+    }
+
+    inline void draw(const std::string &text, float x, float y)
+    {
+      draw(text, x, y, mCurrFont, mCurrSize, mCurrRGB);
+    }
+
+    void draw(const std::string &text, float x, float y, const std::string &fontname, const float &size, const std::array<float, 3> &color);
+
+    //load font data from .ttf file, sets loaded font to current
     bool load_font(const std::string &filename, unsigned int size = 48);
 
+    void init();
+
   protected:
-    std::string mCurrFont;
+    //current rendering
     float mCurrSize;
+    std::array<float, 3> mCurrRGB;
+    std::string mCurrFont;
+
+    //font database
     std::unordered_map<std::string, Font> mFonts;
+
+    //geometry
+    std::array<float, 8> mVQuad;
+    std::array<uint8_t, 6> mIQuad;
+
+    //rendering
+    bool mIsInit;
+    mutable Program mPrg;
+    mutable VertexArray mVao;
   };
 }
 

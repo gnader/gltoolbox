@@ -64,13 +64,8 @@ int main(int argc, char **argv)
 
   int width, height;
 
-  gltoolbox::TextRenderer txt_renderer;
-  txt_renderer.load_font("./Arial_italic.ttf");
-
-  // gltoolbox::FrameBuffer fbo(GL_FRAMEBUFFER);
-  // fbo.attach(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 1000, 1000, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
-
-  // std::cout << fbo.status_as_string() << std::endl;
+  gltoolbox::TextRenderer txt;
+  txt.load_font("./Arial_italic.ttf", 48);
 
   std::vector<uint8_t> data;
   data.resize(1000 * 1000 * 3);
@@ -91,11 +86,12 @@ int main(int argc, char **argv)
     gltoolbox::GL::clear(GL_COLOR_BUFFER_BIT);
     gltoolbox::GL::clear_color(255.f, 1.f);
 
-    gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
-    gltoolbox::Shape2D::draw_quad(0, 0, 600, 200);
+    // gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
+    // gltoolbox::Shape2D::draw_quad(0, 0, 600, 200);
 
-    gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
-    gltoolbox::Shape2D::draw_quad(200, 200, 400, 600);
+    // gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
+    // gltoolbox::Shape2D::draw_quad(200, 200, 400, 600);
+    txt.draw("This is a Sample Text", 0, 0);
     // fbo.unbind();
 
     // fbo.texture(GL_COLOR_ATTACHMENT0)->download(data.data());

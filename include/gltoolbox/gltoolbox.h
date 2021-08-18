@@ -37,6 +37,4 @@
 #include "uniform.h"
 #include "vertexarray.h"
 
-#include "./utils/textrenderer.h"
-
 #endif // __GLTOOLBOX_H__
