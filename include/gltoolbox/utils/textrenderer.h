@@ -88,6 +88,7 @@ namespace gltoolbox
     std::unordered_map<std::string, Font> mFonts;
 
     //geometry
+    std::vector<float> mTQuad;
     std::array<float, 8> mVQuad;
     std::array<uint8_t, 6> mIQuad;
 

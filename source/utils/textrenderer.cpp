@@ -31,10 +31,13 @@ using namespace gltoolbox;
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#define BUFFSIZE 100
+
 // Shaders //-------------------------------------------------------//
 const std::string vShader = "#version 450 core \n"
                             "in vec2 vert; \n"
-                            "uniform vec4 T; \n"
+                            "in vec4 T; \n"
+                            // "uniform vec4 T; \n"
                             "void main(void) { \n"
                             "  mat2 s = mat2(T.z, 0 , 0, T.w); \n"
                             "  vec3 position = vec3(s*vert+T.xy, 0.f); \n"
@@ -53,6 +56,7 @@ const std::string fShader = "#version 450 core \n"
 TextRenderer::TextRenderer(bool doInit)
     : mCurrSize(3.f), mCurrRGB{0.f, 0.f, 0.f}, mCurrFont(""), mIsInit(false)
 {
+  mTQuad.resize(4 * BUFFSIZE, 0.f);
   mVQuad = {0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f};
   mIQuad = {0, 1, 2, 0, 2, 3};
 
@@ -81,28 +85,27 @@ void TextRenderer::draw(const std::string &text, float x, float y,
   float scaleY = size / float(vp[3] - vp[1]);
   float advance = 0;
 
-  mPrg.use();
-  for (const char &c : text)
+  for (size_t i = 0; i < text.size(); ++i)
   {
-    const Character &glyph = font.characterlist.at(c);
+    const Character &c = font.characterlist.at(text.at(i));
+    mTQuad[4 * i + 0] = x + advance + c.bearingX * scaleX;
+    mTQuad[4 * i + 1] = y - (c.height - c.bearingY) * scaleY;
+    mTQuad[4 * i + 2] = c.width * scaleX;
+    mTQuad[4 * i + 3] = c.height * scaleY;
 
-    std::array<float, 4> T = {x + advance + glyph.bearingX * scaleX,
-                              y - (glyph.height - glyph.bearingY) * scaleY,
-                              glyph.width * scaleX,
-                              glyph.height * scaleY};
-    std::array<float, 3> rgb = color;
-
-    mPrg.enable_uniform("T", &T);
-    mPrg.enable_uniform("rgb", &rgb);
-
-    mVao.bind();
-    mVao.enable_attributes(mPrg.attributes());
-    mVao.draw_elements();
-    mVao.disable_attributes(mPrg.attributes());
-    mVao.unbind();
-
-    advance += float(glyph.advance >> 6) * scaleX;
+    advance += float(c.advance >> 6) * scaleX;
   }
+  mVao.attribute_buffer("T").lock()->update(GL_DYNAMIC_DRAW);
+
+  std::array<float, 3> rgb = color;
+
+  mPrg.use();
+  mPrg.enable_uniform("rgb", &rgb);
+  mVao.bind();
+  mVao.enable_attributes(mPrg.attributes());
+  mVao.draw_elements(text.size());
+  mVao.disable_attributes(mPrg.attributes());
+  mVao.unbind();
   mPrg.unuse();
 }
 
@@ -170,12 +173,14 @@ void TextRenderer::init()
 
   //add uniforms and inputs
   mPrg.add_attribute("vert");
-  mPrg.add_uniform<std::array<float, 4>>("T");
+  mPrg.add_attribute("T");
+  // mPrg.add_uniform<std::array<float, 4>>("T");
   mPrg.add_uniform<std::array<float, 3>>("rgb");
 
   //setup buffers
   mVao.set_index_buffer<uint8_t>(GL_TRIANGLES, mIQuad.data(), mIQuad.size(), GL_STATIC_DRAW);
   mVao.add_attribute<float>("vert", mVQuad.data(), mVQuad.size(), 2, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
+  mVao.add_attribute<float>("T", mTQuad.data(), mTQuad.size(), 4, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW, GL_FALSE, 1);
 
   mIsInit = true;
 }

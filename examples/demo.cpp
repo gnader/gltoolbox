@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
     // gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
     // gltoolbox::Shape2D::draw_quad(200, 200, 400, 600);
-    txt.draw("This is a Sample Text", 0, 0);
+    txt.draw("a bcde f", 0, 0);
     // fbo.unbind();
 
     // fbo.texture(GL_COLOR_ATTACHMENT0)->download(data.data());
