@@ -89,14 +89,17 @@ namespace gltoolbox
     static void enable_stencil() { glEnable(GL_STENCIL_TEST); }
     static void disbale_stencil() { glDisable(GL_STENCIL_TEST); }
     static GLboolean is_stencil_enabled() { return glIsEnabled(GL_STENCIL_TEST); }
+    static void set_stencil_func(GLenum func, GLint ref, GLint mask) { glStencilFunc(func, ref, mask); }
 
     static void enable_depth() { glEnable(GL_DEPTH_TEST); }
     static void disbale_depth() { glDisable(GL_DEPTH_TEST); }
     static GLboolean is_depth_enabled() { return glIsEnabled(GL_DEPTH_TEST); }
+    static void set_depth_func(GLenum func) { glDepthFunc(func); }
 
     static void enable_blend() { glEnable(GL_BLEND); }
     static void disbale_blend() { glDisable(GL_BLEND); }
     static GLboolean is_blend_enabled() { return glIsEnabled(GL_BLEND); }
+    static void set_blend_func(GLenum factor, GLenum defactor) { glBlendFunc(factor, defactor); }
 
     static void enable_dither() { glEnable(GL_DITHER); }
     static void disbale_dither() { glDisable(GL_DITHER); }

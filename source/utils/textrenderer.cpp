@@ -37,24 +37,29 @@ using namespace gltoolbox;
 const std::string vShader = "#version 450 core \n"
                             "in vec2 vert; \n"
                             "in vec4 T; \n"
-                            // "uniform vec4 T; \n"
+                            "out vec2 tex; \n"
                             "void main(void) { \n"
+                            "  tex = vert; \n"
                             "  mat2 s = mat2(T.z, 0 , 0, T.w); \n"
                             "  vec3 position = vec3(s*vert+T.xy, 0.f); \n"
                             "  gl_Position = vec4(position, 1.0);\n"
                             "}";
 
 const std::string fShader = "#version 450 core \n"
+                            "in vec2 tex; \n"
                             "out vec4 colour; \n"
                             "uniform vec3 rgb; \n"
+                            "uniform sampler2D atlas; \n"
                             "void main(void) { \n"
-                            "  colour = vec4(rgb, 1.f); \n"
+                            "  float alpha = texture(atlas, tex).r; \n"
+                            // "  colour = vec4(vec3(tex.x, tex.y, 0), 1.f); \n"
+                            "  colour = vec4(rgb, alpha); \n"
                             "}";
 ;
 //------------------------------------------------------------------//
 
 TextRenderer::TextRenderer(bool doInit)
-    : mCurrSize(3.f), mCurrRGB{0.f, 0.f, 0.f}, mCurrFont(""), mIsInit(false)
+    : mCurrSize(3.f), mCurrRGB{1.f, 0.f, 0.f}, mCurrFont(""), mIsInit(false)
 {
   mTQuad.resize(4 * BUFFSIZE, 0.f);
   mVQuad = {0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f};
@@ -100,12 +105,21 @@ void TextRenderer::draw(const std::string &text, float x, float y,
   std::array<float, 3> rgb = color;
 
   mPrg.use();
+  //uniforms
   mPrg.enable_uniform("rgb", &rgb);
+  //texture
+  Texture::activate(0);
+  font.atlas.bind();
+  mPrg.enable_samplers();
+  //attributes
   mVao.bind();
   mVao.enable_attributes(mPrg.attributes());
+  //draw
   mVao.draw_elements(text.size());
+  //disableing
   mVao.disable_attributes(mPrg.attributes());
   mVao.unbind();
+  font.atlas.unbind();
   mPrg.unuse();
 }
 
@@ -136,6 +150,8 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
   std::string name(face->family_name);
   mFonts.insert({name, Font()});
 
+  Texture::unpack_alignment(1);
+
   //load font characters, only ascii are supported for now
   std::string ascii = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
   for (auto c : ascii)
@@ -151,6 +167,12 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
                      face->glyph->bitmap_left,
                      face->glyph->bitmap_top,
                      face->glyph->metrics.horiAdvance};
+
+    if (c == 'A')
+    {
+      mFonts[name].atlas.upload(face->glyph->bitmap.buffer, chr.width, chr.height, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
+      mFonts[name].atlas.generate_mipmaps();
+    }
 
     mFonts[name].characterlist.insert(std::pair<char, Character>(c, chr));
   }
@@ -174,7 +196,7 @@ void TextRenderer::init()
   //add uniforms and inputs
   mPrg.add_attribute("vert");
   mPrg.add_attribute("T");
-  // mPrg.add_uniform<std::array<float, 4>>("T");
+  mPrg.add_sampler("atlas", 0);
   mPrg.add_uniform<std::array<float, 3>>("rgb");
 
   //setup buffers

@@ -32,6 +32,7 @@
 #include <vector>
 
 #include <gltoolbox/program.h>
+#include <gltoolbox/texture.h>
 #include <gltoolbox/vertexarray.h>
 
 namespace gltoolbox
@@ -48,10 +49,10 @@ namespace gltoolbox
 
     struct Font
     {
-      unsigned int textureID;
+      Texture atlas;
       std::map<char, Character> characterlist;
 
-      Font() : textureID(0) {} //default constructor
+      Font() : atlas(GL_TEXTURE_2D, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR) {} //default constructor
     };
 
   public:
@@ -76,6 +77,7 @@ namespace gltoolbox
     //load font data from .ttf file, sets loaded font to current
     bool load_font(const std::string &filename, unsigned int size = 48);
 
+  protected:
     void init();
 
   protected:

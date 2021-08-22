@@ -39,6 +39,11 @@ namespace gltoolbox
       glActiveTexture(GL_TEXTURE0 + unit);
     }
 
+    inline static void unpack_alignment(GLint value)
+    {
+      glPixelStorei(GL_UNPACK_ALIGNMENT, value);
+    }
+
     static GLuint dimention(GLenum target);
 
   public:

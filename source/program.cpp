@@ -95,7 +95,7 @@ void Program::detach_shader(GLenum type)
   mShaderList.erase(type);
 }
 
-bool Program::has_attribute(const std::string &name)
+bool Program::has_attribute(const std::string &name) const
 {
   auto search = mAttributeList.find(name);
   return search != mAttributeList.end();
@@ -121,6 +121,38 @@ void Program::add_attributes(const std::vector<std::string> &names)
 void Program::remove_attribute(const std::string &name)
 {
   mAttributeList.erase(name);
+}
+
+bool Program::has_sampler(const std::string &name) const
+{
+  auto search = mSamplerList.find(name);
+  return search != mSamplerList.end();
+}
+
+bool Program::add_sampler(const std::string &name, GLint unit)
+{
+  int loc = glGetAttribLocation(id(), name.c_str());
+  bool success = (loc >= 0);
+  if (success)
+    mSamplerList[name] = {loc, unit};
+  return success;
+}
+
+void Program::enable_samplers() const
+{
+  for (const auto &[name, sampler] : mSamplerList)
+    glProgramUniform1i(id(), sampler.first, sampler.second);
+}
+
+void Program::enable_samplers(const std::string &name) const
+{
+  const auto &sampler = mSamplerList.at(name);
+  glProgramUniform1i(id(), sampler.first, sampler.second);
+}
+
+void Program::remove_sampler(const std::string &name)
+{
+  mSamplerList.erase(name);
 }
 
 void Program::enable_uniforms() const

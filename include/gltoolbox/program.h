@@ -77,7 +77,7 @@ namespace gltoolbox
     inline GLint num_active_attributes() const { return get_parameter(GL_ACTIVE_ATTRIBUTES); }
     inline const std::unordered_map<std::string, GLint> &attributes() const { return mAttributeList; }
 
-    bool has_attribute(const std::string &name);
+    bool has_attribute(const std::string &name) const;
 
     bool add_attribute(const std::string &name);
     void add_attributes(const std::vector<std::string> &names);
@@ -85,10 +85,26 @@ namespace gltoolbox
     void remove_attribute(const std::string &name);
 
     //============================
+    // Textures
+    //============================
+
+    inline GLint num_active_samplers() const { return get_parameter(GL_ACTIVE_UNIFORMS) - mUniformList.size(); }
+    inline const std::unordered_map<std::string, std::pair<GLint, GLint>> &samplers() const { return mSamplerList; }
+
+    bool has_sampler(const std::string &name) const;
+
+    bool add_sampler(const std::string &name, GLint unit);
+
+    void enable_samplers() const;
+    void enable_samplers(const std::string &name) const;
+
+    void remove_sampler(const std::string &name);
+
+    //============================
     // Uniforms
     //============================
 
-    inline GLint num_active_uniforms() const { return get_parameter(GL_ACTIVE_UNIFORMS); }
+    inline GLint num_active_uniforms() const { return get_parameter(GL_ACTIVE_UNIFORMS) - mSamplerList.size(); }
 
     template <typename T>
     bool add_uniform(const std::string &name, T *ptr = nullptr, GLsizei count = 1)
@@ -140,6 +156,7 @@ namespace gltoolbox
     std::unordered_map<GLenum, Shader> mShaderList;
 
     std::unordered_map<std::string, GLint> mAttributeList;
+    std::unordered_map<std::string, std::pair<GLint, GLint>> mSamplerList;
     std::unordered_map<std::string, std::unique_ptr<BaseUniform>> mUniformList;
   };
 }
