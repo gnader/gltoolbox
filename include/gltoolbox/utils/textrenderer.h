@@ -44,12 +44,15 @@ namespace gltoolbox
     {
       uint32_t width, height;
       int32_t bearingX, bearingY;
-      int32_t advance;
+      int64_t advance;
+      int32_t texX, texY; // texture coordinates
     };
 
     struct Font
     {
       Texture atlas;
+      uint32_t atlasres;
+      std::vector<char> _atlas;
       std::map<char, Character> characterlist;
 
       Font() : atlas(GL_TEXTURE_2D, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR) {} //default constructor
@@ -91,6 +94,7 @@ namespace gltoolbox
 
     //geometry
     std::vector<float> mTQuad;
+    std::vector<float> mTexQuad;
     std::array<float, 8> mVQuad;
     std::array<uint8_t, 6> mIQuad;
 

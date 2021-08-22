@@ -28,6 +28,7 @@
 using namespace gltoolbox;
 
 #include <iostream>
+#include <bitset>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -36,12 +37,14 @@ using namespace gltoolbox;
 // Shaders //-------------------------------------------------------//
 const std::string vShader = "#version 450 core \n"
                             "in vec2 vert; \n"
-                            "in vec4 T; \n"
+                            "in vec4 texT; \n"
+                            "in vec4 posT; \n"
                             "out vec2 tex; \n"
                             "void main(void) { \n"
-                            "  tex = vert; \n"
-                            "  mat2 s = mat2(T.z, 0 , 0, T.w); \n"
-                            "  vec3 position = vec3(s*vert+T.xy, 0.f); \n"
+                            "  mat2 sPos = mat2(posT.z, 0 , 0, posT.w); \n"
+                            "  mat2 sTex = mat2(texT.z, 0 , 0, texT.w); \n"
+                            "  tex = sTex * vert + texT.xy; \n"
+                            "  vec3 position = vec3(sPos * vert + posT.xy, 0.f); \n"
                             "  gl_Position = vec4(position, 1.0);\n"
                             "}";
 
@@ -52,16 +55,16 @@ const std::string fShader = "#version 450 core \n"
                             "uniform sampler2D atlas; \n"
                             "void main(void) { \n"
                             "  float alpha = texture(atlas, tex).r; \n"
-                            // "  colour = vec4(vec3(tex.x, tex.y, 0), 1.f); \n"
                             "  colour = vec4(rgb, alpha); \n"
                             "}";
 ;
 //------------------------------------------------------------------//
 
 TextRenderer::TextRenderer(bool doInit)
-    : mCurrSize(3.f), mCurrRGB{1.f, 0.f, 0.f}, mCurrFont(""), mIsInit(false)
+    : mCurrSize(3.f), mCurrRGB{0.f, 0.f, 0.f}, mCurrFont(""), mIsInit(false)
 {
   mTQuad.resize(4 * BUFFSIZE, 0.f);
+  mTexQuad.resize(4 * BUFFSIZE, 0.f);
   mVQuad = {0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f};
   mIQuad = {0, 1, 2, 0, 2, 3};
 
@@ -98,9 +101,15 @@ void TextRenderer::draw(const std::string &text, float x, float y,
     mTQuad[4 * i + 2] = c.width * scaleX;
     mTQuad[4 * i + 3] = c.height * scaleY;
 
+    mTexQuad[4 * i + 0] = c.texX / float(font.atlasres);
+    mTexQuad[4 * i + 1] = c.texY / float(font.atlasres);
+    mTexQuad[4 * i + 2] = c.width / float(font.atlasres);
+    mTexQuad[4 * i + 3] = c.height / float(font.atlasres);
+
     advance += float(c.advance >> 6) * scaleX;
   }
-  mVao.attribute_buffer("T").lock()->update(GL_DYNAMIC_DRAW);
+  mVao.attribute_buffer("posT").lock()->update(GL_DYNAMIC_DRAW);
+  mVao.attribute_buffer("texT").lock()->update(GL_DYNAMIC_DRAW);
 
   std::array<float, 3> rgb = color;
 
@@ -154,6 +163,15 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
 
   //load font characters, only ascii are supported for now
   std::string ascii = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+
+  int res = size * int(sqrt(ascii.length()) + 1);
+  res = 1 << (int(log2(res)) + 1);
+
+  mFonts[name]._atlas.resize(res * res);
+  mFonts[name].atlasres = res;
+  int32_t texX = 0;
+  int32_t texY = 0;
+  unsigned int nY = 0;
   for (auto c : ascii)
   {
     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
@@ -162,22 +180,37 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
       continue;
     }
 
-    Character chr = {face->glyph->bitmap.width,
-                     face->glyph->bitmap.rows,
-                     face->glyph->bitmap_left,
-                     face->glyph->bitmap_top,
-                     face->glyph->metrics.horiAdvance};
+    FT_GlyphSlot glyph = face->glyph;
 
-    if (c == 'A')
+    //compute texture coordinates
+    if (texX + glyph->bitmap.width >= res)
     {
-      mFonts[name].atlas.upload(face->glyph->bitmap.buffer, chr.width, chr.height, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
-      mFonts[name].atlas.generate_mipmaps();
+      texY += nY;
+      texX = 0;
+      nY = 0;
     }
+    nY = std::max(nY, glyph->bitmap.rows);
 
+    //create character
+    Character chr = {glyph->bitmap.width, glyph->bitmap.rows,
+                     glyph->bitmap_left, glyph->bitmap_top,
+                     glyph->metrics.horiAdvance,
+                     texX, texY};
     mFonts[name].characterlist.insert(std::pair<char, Character>(c, chr));
+
+    //copy bitmap data
+    for (int32_t j = 0; j < chr.height; ++j)
+      for (int32_t i = 0; i < chr.width; ++i)
+        mFonts[name]._atlas[(texY + j) * res + texX + i] = glyph->bitmap.buffer[(chr.height - 1 - j) * chr.width + i];
+
+    //increment texture
+    texX += chr.width;
   }
 
   mCurrFont = name;
+
+  mFonts[name].atlas.upload(mFonts[name]._atlas.data(), res, res, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
+  mFonts[name].atlas.generate_mipmaps();
 
   //clean up
   FT_Done_Face(face);
@@ -195,14 +228,16 @@ void TextRenderer::init()
 
   //add uniforms and inputs
   mPrg.add_attribute("vert");
-  mPrg.add_attribute("T");
+  mPrg.add_attribute("posT");
+  mPrg.add_attribute("texT");
   mPrg.add_sampler("atlas", 0);
   mPrg.add_uniform<std::array<float, 3>>("rgb");
 
   //setup buffers
   mVao.set_index_buffer<uint8_t>(GL_TRIANGLES, mIQuad.data(), mIQuad.size(), GL_STATIC_DRAW);
   mVao.add_attribute<float>("vert", mVQuad.data(), mVQuad.size(), 2, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
-  mVao.add_attribute<float>("T", mTQuad.data(), mTQuad.size(), 4, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW, GL_FALSE, 1);
+  mVao.add_attribute<float>("posT", mTQuad.data(), mTQuad.size(), 4, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW, GL_FALSE, 1);
+  mVao.add_attribute<float>("texT", mTexQuad.data(), mTexQuad.size(), 4, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW, GL_FALSE, 1);
 
   mIsInit = true;
 }
