@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   int width, height;
 
   gltoolbox::TextRenderer txt;
-  txt.load_font("./Arial_italic.ttf", 128);
+  txt.load_font("./calibri.ttf", 64);
 
   std::vector<uint8_t> data;
   data.resize(1000 * 1000 * 3);
@@ -85,25 +85,16 @@ int main(int argc, char **argv)
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
-    // std::cout << "rendering into framebuffer" << std::endl;
-
-    // fbo.bind();
     gltoolbox::GL::clear(GL_COLOR_BUFFER_BIT);
     gltoolbox::GL::clear_color(255.f, 1.f);
 
-    // gltoolbox::Shape2D::color(0.8, 0.1, 0.1);
-    // gltoolbox::Shape2D::draw_quad(0, 0, 600, 200);
+    std::string text = "Finally I can render text in my programs";
+    double t0 = glfwGetTime();
+    txt.draw(text, -0.5, -0.2, "Calibri", 2, {1., 0, 0});
+    double t1 = glfwGetTime();
 
-    // gltoolbox::Shape2D::color(0.1, 0.8, 0.1);
-    // gltoolbox::Shape2D::draw_quad(200, 200, 400, 600);
-    std::string text = std::to_string(n++);
-    txt.draw(text, -0.2, -0.2, "Arial", 5, {1., 0, 0});
-    // fbo.unbind();
-
-    // fbo.texture(GL_COLOR_ATTACHMENT0)->download(data.data());
-
-    // stbi_flip_vertically_on_write(1);
-    // stbi_write_png("test.png", 1000, 1000, 3, data.data(), 0);
+    double dt = t1 - t0;
+    std::cout << 1. / dt << " fps" << std::endl;
 
     glfwSwapBuffers(window);
   }

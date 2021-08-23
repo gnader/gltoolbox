@@ -50,13 +50,16 @@ namespace gltoolbox
 
     struct Font
     {
-      Texture atlas;
       uint32_t atlasres;
-      std::vector<char> _atlas;
+      std::vector<char> atlas;
       std::map<char, Character> characterlist;
 
-      Font() : atlas(GL_TEXTURE_2D, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR) {} //default constructor
+      Font() {} //default constructor
     };
+
+  private:
+    static std::string charlist;
+    static int padding;
 
   public:
     TextRenderer(bool doInit = false);
@@ -66,8 +69,17 @@ namespace gltoolbox
     inline void set_font_color(const std::array<float, 3> &rgb) { mCurrRGB = rgb; }
     inline void set_font(const std::string &fontname)
     {
-      if (mFonts.find(fontname) != mFonts.end())
-        mCurrFont = fontname;
+      if (mCurrFont == fontname)
+        return;
+
+      const auto &it = mFonts.find(fontname);
+      if (it == mFonts.end())
+        return;
+
+      auto &font = it->second;
+      mCurrFont = fontname;
+      mAtlas.upload(font.atlas.data(), font.atlasres, font.atlasres, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
+      mAtlas.generate_mipmaps();
     }
 
     inline void draw(const std::string &text, float x, float y)
@@ -100,6 +112,7 @@ namespace gltoolbox
 
     //rendering
     bool mIsInit;
+    Texture mAtlas;
     mutable Program mPrg;
     mutable VertexArray mVao;
   };

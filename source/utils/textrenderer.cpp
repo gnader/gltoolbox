@@ -60,8 +60,11 @@ const std::string fShader = "#version 450 core \n"
 ;
 //------------------------------------------------------------------//
 
+std::string TextRenderer::charlist = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+int TextRenderer::padding = 4;
+
 TextRenderer::TextRenderer(bool doInit)
-    : mCurrSize(3.f), mCurrRGB{0.f, 0.f, 0.f}, mCurrFont(""), mIsInit(false)
+    : mCurrSize(1.f), mCurrRGB{0.f, 0.f, 0.f}, mCurrFont(""), mIsInit(false), mAtlas(GL_TEXTURE_2D)
 {
   mTQuad.resize(4 * BUFFSIZE, 0.f);
   mTexQuad.resize(4 * BUFFSIZE, 0.f);
@@ -87,48 +90,66 @@ void TextRenderer::draw(const std::string &text, float x, float y,
   if (!mIsInit)
     init();
 
+  std::array<float, 3> rgb = color;
+
   GLint vp[4];
   GL::get_viewport(vp);
   float scaleX = size / float(vp[2] - vp[0]);
   float scaleY = size / float(vp[3] - vp[1]);
+  float scaleT = 1.f / float(font.atlasres);
   float advance = 0;
-
-  for (size_t i = 0; i < text.size(); ++i)
-  {
-    const Character &c = font.characterlist.at(text.at(i));
-    mTQuad[4 * i + 0] = x + advance + c.bearingX * scaleX;
-    mTQuad[4 * i + 1] = y - (c.height - c.bearingY) * scaleY;
-    mTQuad[4 * i + 2] = c.width * scaleX;
-    mTQuad[4 * i + 3] = c.height * scaleY;
-
-    mTexQuad[4 * i + 0] = c.texX / float(font.atlasres);
-    mTexQuad[4 * i + 1] = c.texY / float(font.atlasres);
-    mTexQuad[4 * i + 2] = c.width / float(font.atlasres);
-    mTexQuad[4 * i + 3] = c.height / float(font.atlasres);
-
-    advance += float(c.advance >> 6) * scaleX;
-  }
-  mVao.attribute_buffer("posT").lock()->update(GL_DYNAMIC_DRAW);
-  mVao.attribute_buffer("texT").lock()->update(GL_DYNAMIC_DRAW);
-
-  std::array<float, 3> rgb = color;
 
   mPrg.use();
   //uniforms
   mPrg.enable_uniform("rgb", &rgb);
   //texture
   Texture::activate(0);
-  font.atlas.bind();
+  mAtlas.bind();
   mPrg.enable_samplers();
   //attributes
   mVao.bind();
   mVao.enable_attributes(mPrg.attributes());
-  //draw
-  mVao.draw_elements(text.size());
-  //disableing
+
+  int i = 0;
+  while (i < text.size())
+  {
+    for (int j = 0; j < BUFFSIZE; ++j)
+    {
+      auto it = font.characterlist.find(text.at(i));
+      if (it == font.characterlist.end())
+        it--;
+
+      //compute vertex and texture coords
+      const Character &c = it->second;
+      mTQuad[4 * j + 0] = x + advance + c.bearingX * scaleX;
+      mTQuad[4 * j + 1] = y - (c.height - c.bearingY) * scaleY;
+      mTQuad[4 * j + 2] = c.width * scaleX;
+      mTQuad[4 * j + 3] = c.height * scaleY;
+
+      mTexQuad[4 * j + 0] = (c.texX - 1) * scaleT;
+      mTexQuad[4 * j + 1] = (c.texY - 1) * scaleT;
+      mTexQuad[4 * j + 2] = (c.width + 2) * scaleT;
+      mTexQuad[4 * j + 3] = (c.height + 2) * scaleT;
+
+      advance += (float(c.advance >> 6) - 2.) * scaleX;
+
+      ++i;
+      if (i >= text.size())
+        break;
+    }
+
+    //upload data to gpu
+    mVao.attribute_buffer("posT").lock()->update(GL_DYNAMIC_DRAW);
+    mVao.attribute_buffer("texT").lock()->update(GL_DYNAMIC_DRAW);
+
+    //draw
+    mVao.draw_elements(text.size());
+  }
+
+  //cleanup
   mVao.disable_attributes(mPrg.attributes());
   mVao.unbind();
-  font.atlas.unbind();
+  mAtlas.unbind();
   mPrg.unuse();
 }
 
@@ -162,17 +183,15 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
   Texture::unpack_alignment(1);
 
   //load font characters, only ascii are supported for now
-  std::string ascii = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-
-  int res = size * int(sqrt(ascii.length()) + 1);
+  int res = (size + padding) * int(sqrt(charlist.length()) + 1);
   res = 1 << (int(log2(res)) + 1);
 
-  mFonts[name]._atlas.resize(res * res);
+  mFonts[name].atlas.resize(res * res);
   mFonts[name].atlasres = res;
-  int32_t texX = 0;
-  int32_t texY = 0;
+  int32_t texX = padding / 2;
+  int32_t texY = padding / 2;
   unsigned int nY = 0;
-  for (auto c : ascii)
+  for (auto c : charlist)
   {
     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
     {
@@ -183,9 +202,9 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
     FT_GlyphSlot glyph = face->glyph;
 
     //compute texture coordinates
-    if (texX + glyph->bitmap.width >= res)
+    if (texX + glyph->bitmap.width > res)
     {
-      texY += nY;
+      texY += nY + padding;
       texX = 0;
       nY = 0;
     }
@@ -201,16 +220,14 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
     //copy bitmap data
     for (int32_t j = 0; j < chr.height; ++j)
       for (int32_t i = 0; i < chr.width; ++i)
-        mFonts[name]._atlas[(texY + j) * res + texX + i] = glyph->bitmap.buffer[(chr.height - 1 - j) * chr.width + i];
+        mFonts[name].atlas[(texY + j) * res + texX + i] = glyph->bitmap.buffer[(chr.height - 1 - j) * chr.width + i];
 
     //increment texture
-    texX += chr.width;
+    texX += chr.width + padding;
   }
 
-  mCurrFont = name;
-
-  mFonts[name].atlas.upload(mFonts[name]._atlas.data(), res, res, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
-  mFonts[name].atlas.generate_mipmaps();
+  if (mCurrFont.empty())
+    set_font(name);
 
   //clean up
   FT_Done_Face(face);
@@ -221,6 +238,9 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
 
 void TextRenderer::init()
 {
+  //setup texture
+  mAtlas.set_texture_options(GL_TEXTURE_2D, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+
   //setup program
   mPrg.attach_shader(std::move(gltoolbox::Shader(vShader, GL_VERTEX_SHADER)));
   mPrg.attach_shader(std::move(gltoolbox::Shader(fShader, GL_FRAGMENT_SHADER)));
