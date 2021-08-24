@@ -78,6 +78,7 @@ namespace gltoolbox
 
       auto &font = it->second;
       mCurrFont = fontname;
+      Texture::unpack_alignment(1);
       mAtlas.upload(font.atlas.data(), font.atlasres, font.atlasres, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
       mAtlas.generate_mipmaps();
     }
@@ -85,6 +86,30 @@ namespace gltoolbox
     inline void draw(const std::string &text, float x, float y)
     {
       draw(text, x, y, mCurrFont, mCurrSize, mCurrRGB);
+    }
+    inline void draw(const std::string &text, float x, float y, const std::string &fontname)
+    {
+      draw(text, x, y, fontname, mCurrSize, mCurrRGB);
+    }
+    inline void draw(const std::string &text, float x, float y, const float &size)
+    {
+      draw(text, x, y, mCurrFont, size, mCurrRGB);
+    }
+    inline void draw(const std::string &text, float x, float y, const std::array<float, 3> &rgb)
+    {
+      draw(text, x, y, mCurrFont, mCurrSize, rgb);
+    }
+    inline void draw(const std::string &text, float x, float y, const std::string &fontname, const float &size)
+    {
+      draw(text, x, y, fontname, size, mCurrRGB);
+    }
+    inline void draw(const std::string &text, float x, float y, const float &size, const std::array<float, 3> &rgb)
+    {
+      draw(text, x, y, mCurrFont, size, rgb);
+    }
+    inline void draw(const std::string &text, float x, float y, const std::string &fontname, const std::array<float, 3> &rgb)
+    {
+      draw(text, x, y, fontname, mCurrSize, rgb);
     }
 
     void draw(const std::string &text, float x, float y, const std::string &fontname, const float &size, const std::array<float, 3> &color);

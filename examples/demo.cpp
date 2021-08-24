@@ -66,6 +66,7 @@ int main(int argc, char **argv)
 
   gltoolbox::TextRenderer txt;
   txt.load_font("./calibri.ttf", 64);
+  txt.load_font("./consolas.ttf", 64);
 
   std::vector<uint8_t> data;
   data.resize(1000 * 1000 * 3);
@@ -88,9 +89,9 @@ int main(int argc, char **argv)
     gltoolbox::GL::clear(GL_COLOR_BUFFER_BIT);
     gltoolbox::GL::clear_color(255.f, 1.f);
 
-    std::string text = "Finally I can render text in my programs";
+    std::string text = "gltoolbox::TextRenderer()";
     double t0 = glfwGetTime();
-    txt.draw(text, -0.5, -0.2, "Calibri", 2, {1., 0, 0});
+    txt.draw(text, -0.5, -0.2, "Consolas", 2, {0., 0, 0});
     double t1 = glfwGetTime();
 
     double dt = t1 - t0;

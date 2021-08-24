@@ -28,7 +28,6 @@
 using namespace gltoolbox;
 
 #include <iostream>
-#include <bitset>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -80,28 +79,31 @@ TextRenderer::~TextRenderer()
 }
 
 void TextRenderer::draw(const std::string &text, float x, float y,
-                        const std::string &fontname, const float &size, const std::array<float, 3> &color)
+                        const std::string &fontname, const float &size, const std::array<float, 3> &rgb)
 {
   if (mFonts.find(fontname) == mFonts.end())
     return;
 
-  const Font &font = mFonts[fontname];
+  if (mCurrFont != fontname)
+    set_font(fontname);
+  mCurrSize = size;
+  mCurrRGB = rgb;
+
+  const Font &font = mFonts[mCurrFont];
 
   if (!mIsInit)
     init();
 
-  std::array<float, 3> rgb = color;
-
   GLint vp[4];
   GL::get_viewport(vp);
-  float scaleX = size / float(vp[2] - vp[0]);
-  float scaleY = size / float(vp[3] - vp[1]);
+  float scaleX = mCurrSize / float(vp[2] - vp[0]);
+  float scaleY = mCurrSize / float(vp[3] - vp[1]);
   float scaleT = 1.f / float(font.atlasres);
   float advance = 0;
 
   mPrg.use();
   //uniforms
-  mPrg.enable_uniform("rgb", &rgb);
+  mPrg.enable_uniform("rgb", &mCurrRGB);
   //texture
   Texture::activate(0);
   mAtlas.bind();
@@ -121,8 +123,8 @@ void TextRenderer::draw(const std::string &text, float x, float y,
 
       //compute vertex and texture coords
       const Character &c = it->second;
-      mTQuad[4 * j + 0] = x + advance + c.bearingX * scaleX;
-      mTQuad[4 * j + 1] = y - (c.height - c.bearingY) * scaleY;
+      mTQuad[4 * j + 0] = advance + float(c.bearingX) * scaleX;
+      mTQuad[4 * j + 1] = (-float(c.height) + float(c.bearingY)) * scaleY;
       mTQuad[4 * j + 2] = c.width * scaleX;
       mTQuad[4 * j + 3] = c.height * scaleY;
 
@@ -131,7 +133,7 @@ void TextRenderer::draw(const std::string &text, float x, float y,
       mTexQuad[4 * j + 2] = (c.width + 2) * scaleT;
       mTexQuad[4 * j + 3] = (c.height + 2) * scaleT;
 
-      advance += (float(c.advance >> 6) - 2.) * scaleX;
+      advance += (float(c.advance >> 6) - 2) * scaleX;
 
       ++i;
       if (i >= text.size())
@@ -180,8 +182,6 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
   std::string name(face->family_name);
   mFonts.insert({name, Font()});
 
-  Texture::unpack_alignment(1);
-
   //load font characters, only ascii are supported for now
   int res = (size + padding) * int(sqrt(charlist.length()) + 1);
   res = 1 << (int(log2(res)) + 1);
@@ -205,7 +205,7 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
     if (texX + glyph->bitmap.width > res)
     {
       texY += nY + padding;
-      texX = 0;
+      texX = padding / 2;
       nY = 0;
     }
     nY = std::max(nY, glyph->bitmap.rows);
