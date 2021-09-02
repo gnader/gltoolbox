@@ -52,15 +52,14 @@ namespace gltoolbox
   protected:
     struct IndexBuffer
     {
-      std::shared_ptr<BaseBuffer> buffer;
-
+      std::shared_ptr<Buffer> buffer;
       GLenum mode;
       GLenum type;
     };
 
     struct AttributeBuffer
     {
-      std::shared_ptr<BaseBuffer> buffer;
+      std::shared_ptr<Buffer> buffer;
       AttributeFormat format;
       GLuint divisor;
     };
@@ -108,7 +107,10 @@ namespace gltoolbox
     template <typename T>
     void set_index_buffer(GLenum mode, T *indices, GLsizei count, GLenum usage = GL_STATIC_DRAW)
     {
-      mIndices.buffer.reset(new Buffer<T>(GL_ELEMENT_ARRAY_BUFFER, indices, count, usage));
+      mIndices.buffer.reset(new Buffer(GL_ELEMENT_ARRAY_BUFFER));
+      mIndices.buffer->attach_to(indices, count);
+      mIndices.buffer->update(usage);
+
       mIndices.mode = mode;
       switch (sizeof(T))
       {
@@ -124,10 +126,9 @@ namespace gltoolbox
       }
     }
 
-    std::weak_ptr<BaseBuffer> index_buffer() const
+    std::shared_ptr<Buffer> index_buffer() const
     {
-      std::weak_ptr<BaseBuffer> wp = mIndices.buffer;
-      return wp;
+      return mIndices.buffer;
     }
 
     //=====================================================
@@ -147,7 +148,10 @@ namespace gltoolbox
       if (search == mAttributes.end())
       {
         AttributeBuffer attr;
-        attr.buffer.reset(new Buffer<T>(GL_ARRAY_BUFFER, data, count, usage));
+        attr.buffer.reset(new Buffer(GL_ARRAY_BUFFER)); //, data, count, usage));
+        attr.buffer->attach_to(data, count);
+        attr.buffer->update(usage);
+
         attr.format = {size, type, stride, offset};
         attr.divisor = divisor;
 
@@ -170,10 +174,9 @@ namespace gltoolbox
       }
     }
 
-    std::weak_ptr<BaseBuffer> attribute_buffer(const std::string &name) const
+    std::shared_ptr<Buffer> attribute_buffer(const std::string &name) const
     {
-      std::weak_ptr<BaseBuffer> wp = mAttributes.at(name).buffer;
-      return wp;
+      return mAttributes.at(name).buffer;
     }
 
     const AttributeFormat &attribute_format(const std::string &name) const

@@ -91,11 +91,12 @@ int main(int argc, char **argv)
 
     std::string text = "gltoolbox::TextRenderer()";
     double t0 = glfwGetTime();
-    txt.draw(text, -0.5, -0.2, "Consolas", 2, {0., 0, 0});
+    txt.draw(text, 0, 100, "Consolas", 64, {0., 0, 0});
+    txt.draw("{ this works }", width / 2, 200, "Consolas", 64, {0., 0, 0});
     double t1 = glfwGetTime();
 
     double dt = t1 - t0;
-    std::cout << 1. / dt << " fps" << std::endl;
+    // std::cout << 1. / dt << " fps" << std::endl;
 
     glfwSwapBuffers(window);
   }

@@ -223,5 +223,5 @@ void Shape2D::PolygonRenderer::update_vertices()
   mCoords[2 * (mSides + 1) + 0] = sin(0);
   mCoords[2 * (mSides + 1) + 1] = cos(0);
 
-  mVao.attribute_buffer("vert").lock()->update(0, 2 * (mSides + 2));
+  mVao.attribute_buffer("vert")->update(0, 2 * (mSides + 2));
 }

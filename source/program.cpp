@@ -25,6 +25,7 @@
   */
 
 #include <gltoolbox/program.h>
+#include <gltoolbox/texture.h>
 using namespace gltoolbox;
 
 Program::Program()
@@ -141,12 +142,16 @@ bool Program::add_sampler(const std::string &name, GLint unit)
 void Program::enable_samplers() const
 {
   for (const auto &[name, sampler] : mSamplerList)
+  {
+    Texture::activate(sampler.second);
     glProgramUniform1i(id(), sampler.first, sampler.second);
+  }
 }
 
-void Program::enable_samplers(const std::string &name) const
+void Program::enable_sampler(const std::string &name) const
 {
   const auto &sampler = mSamplerList.at(name);
+  Texture::activate(sampler.second);
   glProgramUniform1i(id(), sampler.first, sampler.second);
 }
 

@@ -28,13 +28,14 @@
 
 using namespace gltoolbox;
 
-BaseBuffer::BaseBuffer(GLenum target)
-    : mId(0), mOwned(false), mTarget(target)
+Buffer::Buffer(GLenum target)
+    : mId(0), mOwned(false), mTarget(target),
+      mIsAttached(false), mPtr(nullptr), mElementNum(-1), mElementSize(-1)
 {
   create();
 }
 
-BaseBuffer::BaseBuffer(BaseBuffer &&temp)
+Buffer::Buffer(Buffer &&temp)
 {
   //delete whatever was there
   destroy();
@@ -44,16 +45,22 @@ BaseBuffer::BaseBuffer(BaseBuffer &&temp)
   mOwned = temp.mOwned;
   mTarget = temp.mTarget;
 
+  mIsAttached = temp.mIsAttached;
+  mPtr = temp.mPtr;
+  mElementNum = temp.mElementNum;
+  mElementSize = temp.mElementSize;
+
   temp.mId = 0;
   temp.mOwned = false;
+  temp.detach();
 }
 
-BaseBuffer::~BaseBuffer()
+Buffer::~Buffer()
 {
   destroy();
 }
 
-BaseBuffer &BaseBuffer::operator=(BaseBuffer &other)
+Buffer &Buffer::operator=(Buffer &other)
 {
   //delete whatever was there
   destroy();
@@ -63,13 +70,66 @@ BaseBuffer &BaseBuffer::operator=(BaseBuffer &other)
   mOwned = other.mOwned;
   mTarget = other.mTarget;
 
+  mIsAttached = other.mIsAttached;
+  mPtr = other.mPtr;
+  mElementNum = other.mElementNum;
+  mElementSize = other.mElementSize;
+
   other.mId = 0;
   other.mOwned = false;
+  other.detach();
 
   return *this;
 }
 
-void BaseBuffer::create()
+void Buffer::upload(void *ptr, GLsizei size, GLenum usage) const
+{
+  bind();
+  glBufferData(target(), size, ptr, usage);
+}
+
+void Buffer::upload(void *ptr, GLsizei offset, GLsizei size) const
+{
+  bind();
+  glBufferSubData(target(), offset, size, ptr);
+}
+
+void Buffer::download(void *ptr, GLsizei size) const
+{
+  bind();
+  glGetBufferSubData(target(), 0, size, ptr);
+}
+
+void Buffer::download(void *ptr, GLsizei offset, GLsizei size) const
+{
+  bind();
+  glGetBufferSubData(target(), offset, size, ptr);
+}
+
+void Buffer::detach()
+{
+  mPtr = nullptr;
+  mElementNum = 0;
+  mElementSize = 0;
+  mIsAttached = false;
+}
+
+void Buffer::update(GLenum usage) const
+{
+  upload(mPtr, num_elements() * element_size(), usage);
+}
+
+void Buffer::update(GLsizei offset, GLsizei num) const
+{
+  upload(mPtr, element_size() * offset, element_size() * num);
+}
+
+void Buffer::download()
+{
+  download(mPtr, num_elements() * element_size());
+}
+
+void Buffer::create()
 {
   if (!mOwned || !is_valid())
   {
@@ -79,7 +139,7 @@ void BaseBuffer::create()
   }
 }
 
-void BaseBuffer::destroy()
+void Buffer::destroy()
 {
   if (mOwned && is_valid())
   {
@@ -87,9 +147,12 @@ void BaseBuffer::destroy()
     mId = 0;
     mOwned = false;
   }
+
+  if (is_attached())
+    detach();
 }
 
-GLint BaseBuffer::get_parameter(const GLenum param) const
+GLint Buffer::get_parameter(const GLenum param) const
 {
   GLint result;
   bind();

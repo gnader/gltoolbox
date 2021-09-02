@@ -96,7 +96,7 @@ namespace gltoolbox
     bool add_sampler(const std::string &name, GLint unit);
 
     void enable_samplers() const;
-    void enable_samplers(const std::string &name) const;
+    void enable_sampler(const std::string &name) const;
 
     void remove_sampler(const std::string &name);
 
