@@ -64,14 +64,13 @@ void VertexArray::draw_arrays(GLenum mode, GLint first, GLsizei count, GLsizei i
 void VertexArray::draw_elements() const
 {
   mIndices.buffer->bind();
-  GLsizei count = mIndices.buffer->num_elements();
-  glDrawElements(mIndices.mode, count, mIndices.type, (GLvoid *)0);
+  glDrawElements(mIndices.mode, mIndices.count, mIndices.type, (GLvoid *)0);
 }
 
 void VertexArray::draw_elements(GLsizei inum) const
 {
   mIndices.buffer->bind();
-  glDrawElementsInstanced(mIndices.mode, mIndices.buffer.get()->num_elements(), mIndices.type, (GLvoid *)0, inum);
+  glDrawElementsInstanced(mIndices.mode, mIndices.count, mIndices.type, (GLvoid *)0, inum);
 }
 
 void VertexArray::draw_elements(GLuint start, GLuint end) const

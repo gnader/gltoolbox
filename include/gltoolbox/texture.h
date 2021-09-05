@@ -89,6 +89,8 @@ namespace gltoolbox
     void attach_to(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype);
     void attach_to(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype);
 
+    void detach();
+
     void update() const;
 
     void upload(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype) const;

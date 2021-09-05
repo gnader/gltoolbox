@@ -53,6 +53,7 @@ namespace gltoolbox
     struct IndexBuffer
     {
       std::shared_ptr<Buffer> buffer;
+      GLsizei count;
       GLenum mode;
       GLenum type;
     };
@@ -61,6 +62,7 @@ namespace gltoolbox
     {
       std::shared_ptr<Buffer> buffer;
       AttributeFormat format;
+      GLuint count;
       GLuint divisor;
     };
 
@@ -107,11 +109,12 @@ namespace gltoolbox
     template <typename T>
     void set_index_buffer(GLenum mode, T *indices, GLsizei count, GLenum usage = GL_STATIC_DRAW)
     {
-      mIndices.buffer.reset(new Buffer(GL_ELEMENT_ARRAY_BUFFER));
-      mIndices.buffer->attach_to(indices, count);
-      mIndices.buffer->update(usage);
+      mIndices.buffer.reset(new Buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(T), usage));
+      mIndices.buffer->upload(indices, count);
 
+      mIndices.count = count;
       mIndices.mode = mode;
+
       switch (sizeof(T))
       {
       case 1:
@@ -126,7 +129,7 @@ namespace gltoolbox
       }
     }
 
-    std::shared_ptr<Buffer> index_buffer() const
+    inline const std::shared_ptr<Buffer> &index_buffer() const
     {
       return mIndices.buffer;
     }
@@ -134,32 +137,31 @@ namespace gltoolbox
     //=====================================================
     // Attribute Buffers
     //=====================================================
-    size_t num_attributes() const { return mAttributes.size(); }
+    inline size_t num_attributes() const { return mAttributes.size(); }
 
     bool has_attribute(const std::string &name) const;
 
     template <typename T>
     bool add_attribute(const std::string &name,
-                       T *data, GLsizei count, GLsizei size,
-                       GLenum type, GLsizei stride, GLsizei offset,
+                       T *data, GLsizei count,
+                       GLsizei size, GLenum type, GLsizei stride, GLsizei offset,
                        GLenum usage = GL_STATIC_DRAW, GLboolean normalized = GL_FALSE, GLuint divisor = 0)
     {
       auto search = mAttributes.find(name);
       if (search == mAttributes.end())
       {
         AttributeBuffer attr;
-        attr.buffer.reset(new Buffer(GL_ARRAY_BUFFER)); //, data, count, usage));
-        attr.buffer->attach_to(data, count);
-        attr.buffer->update(usage);
+        attr.buffer.reset(new Buffer(GL_ARRAY_BUFFER, sizeof(T), usage)); //, data, count, usage));
+        attr.buffer->upload(data, count);
 
         attr.format = {size, type, stride, offset};
+        attr.count = count;
         attr.divisor = divisor;
 
         mAttributes.insert({name, std::move(attr)});
 
         return true;
       }
-
       return false;
     }
 
@@ -174,27 +176,27 @@ namespace gltoolbox
       }
     }
 
-    std::shared_ptr<Buffer> attribute_buffer(const std::string &name) const
+    inline const std::shared_ptr<Buffer> &attribute_buffer(const std::string &name) const
     {
       return mAttributes.at(name).buffer;
     }
 
-    const AttributeFormat &attribute_format(const std::string &name) const
+    inline const AttributeFormat &attribute_format(const std::string &name) const
     {
       return mAttributes.at(name).format;
     }
 
-    AttributeFormat &attribute_format(const std::string &name)
+    inline AttributeFormat &attribute_format(const std::string &name)
     {
       return mAttributes.at(name).format;
     }
 
-    const GLuint &attribute_divisor(const std::string &name) const
+    inline const GLuint &attribute_divisor(const std::string &name) const
     {
       return mAttributes.at(name).divisor;
     }
 
-    GLuint &attribute_divisor(const std::string &name)
+    inline GLuint &attribute_divisor(const std::string &name)
     {
       return mAttributes.at(name).divisor;
     }

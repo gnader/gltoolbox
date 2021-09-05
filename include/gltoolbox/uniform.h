@@ -51,7 +51,7 @@ namespace gltoolbox
     inline GLint location() const { return mLocation; }
     inline const std::string &name() const { return mName; }
 
-    virtual bool is_linked() const = 0;
+    virtual bool is_attached() const = 0;
     virtual void update() const = 0;
 
   protected:
@@ -146,41 +146,48 @@ namespace gltoolbox
     Uniform(Program *prog, GLint location, T *data = nullptr, GLsizei count = 1)
         : BaseUniform(prog, location), mPtr(data), mCount(count)
     {
-      mLinkedPtr = (data == nullptr);
+      mIsAttached = (data == nullptr);
     }
 
     Uniform(Program *prog, const std::string &name, T *data = nullptr, GLsizei count = 1)
         : BaseUniform(prog, name), mPtr(data), mCount(count)
     {
-      mLinkedPtr = (data == nullptr);
+      mIsAttached = (data == nullptr);
     }
 
     Uniform(Program *prog, GLint location, const std::string &name, T *data = nullptr, GLsizei count = 1)
         : BaseUniform(prog, location, name), mPtr(data), mCount(count)
     {
-      mLinkedPtr = (data == nullptr);
+      mIsAttached = (data == nullptr);
     }
 
     virtual ~Uniform()
     {
-      mPtr = nullptr;
+      detach();
     }
 
-    virtual bool is_linked() const
+    virtual bool is_attached() const
     {
-      return mLinkedPtr;
+      return mIsAttached;
     }
 
-    void link_to(T *data, GLsizei count = 1)
+    void attach_to(T *data, GLsizei count = 1)
     {
       mPtr = data; // mPtr is not deleted, uniform class does not own mPtr
-      mCount = 1;
-      update_value(mCount, mPtr);
+      mCount = count;
+      mIsAttached = true;
+    }
+
+    void detach()
+    {
+      mPtr = nullptr;
+      mCount = -1;
+      mIsAttached = false;
     }
 
     virtual void update() const
     {
-      if (is_linked())
+      if (is_attached())
         update_value(mCount, mPtr);
     }
 
@@ -193,8 +200,8 @@ namespace gltoolbox
     // ! uniform does not have ownership of the pointer.
     // ! mPtr will be dangling if it get deleted or gets out of scope
     T *mPtr;
-    bool mLinkedPtr;
     GLsizei mCount;
+    bool mIsAttached;
   };
 }
 

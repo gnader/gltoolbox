@@ -146,8 +146,8 @@ void TextRenderer::draw(const std::string &text, float x, float y,
     }
 
     //upload data to gpu
-    mVao.attribute_buffer("vPos")->update(GL_DYNAMIC_DRAW);
-    mVao.attribute_buffer("vTex")->update(GL_DYNAMIC_DRAW);
+    mVao.attribute_buffer("vPos")->upload(mTQuad.data(), mTQuad.size());
+    mVao.attribute_buffer("vTex")->upload(mTexQuad.data(), mTexQuad.size());
 
     //draw
     mVao.draw_elements(text.size());
