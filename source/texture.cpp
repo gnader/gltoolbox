@@ -46,23 +46,25 @@ GLuint Texture::dimention(GLenum target)
 }
 
 Texture::Texture(GLenum target)
-    : mId(0), mOwned(false), mTarget(target),
-      mPtr(nullptr), mWidth(0), mHeight(0), mDepth(0)
+    : mId(0), mOwned(false), mTarget(target)
 {
   mDimention = Texture::dimention(target);
   create();
-  set_texture_options(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);
+  set_options(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);
+  set_type(GL_UNSIGNED_BYTE);
+  set_format(GL_RGB);
 }
 
 Texture::Texture(GLenum target,
                  GLenum minfunc, GLenum magfunc,
                  GLenum wraps, GLenum wrapt, GLenum wrapr)
-    : mId(0), mOwned(false), mTarget(target),
-      mPtr(nullptr), mWidth(0), mHeight(0), mDepth(0)
+    : mId(0), mOwned(false), mTarget(target)
 {
   mDimention = Texture::dimention(target);
   create();
-  set_texture_options(minfunc, magfunc, wraps, wrapt, wrapr);
+  set_options(minfunc, magfunc, wraps, wrapt, wrapr);
+  set_type(GL_UNSIGNED_BYTE);
+  set_format(GL_RGB);
 }
 
 Texture::Texture(Texture &&temp)
@@ -75,23 +77,13 @@ Texture::Texture(Texture &&temp)
   mTarget = temp.mTarget;
 
   mDimention = Texture::dimention(mTarget);
-  mWidth = temp.mWidth;
-  mHeight = temp.mHeight;
-  mDepth = temp.mDepth;
 
   mTexFormat = temp.mTexFormat;
   mPixFormat = temp.mPixFormat;
   mPixType = temp.mPixType;
 
-  mPtr = temp.mPtr;
-  mIsAttached = temp.mIsAttached;
-
   temp.mId = 0;
   temp.mOwned = false;
-  temp.mPtr = nullptr;
-  temp.mWidth = 0;
-  temp.mHeight = 0;
-  temp.mDepth = 0;
 }
 
 Texture::~Texture()
@@ -109,28 +101,18 @@ Texture &Texture::operator=(Texture &other)
   mTarget = other.mTarget;
 
   mDimention = Texture::dimention(mTarget);
-  mWidth = other.mWidth;
-  mHeight = other.mHeight;
-  mDepth = other.mDepth;
 
   mTexFormat = other.mTexFormat;
   mPixFormat = other.mPixFormat;
   mPixType = other.mPixType;
 
-  mPtr = other.mPtr;
-  mIsAttached = other.mIsAttached;
-
   other.mId = 0;
   other.mOwned = false;
-  other.mPtr = nullptr;
-  other.mWidth = 0;
-  other.mHeight = 0;
-  other.mDepth = 0;
 
   return *this;
 }
 
-void Texture::set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps) const
+void Texture::set_options(GLenum minfunc, GLenum magfunc, GLenum wraps) const
 {
   bind();
 
@@ -140,7 +122,7 @@ void Texture::set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps) 
   unbind();
 }
 
-void Texture::set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt) const
+void Texture::set_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt) const
 {
   bind();
 
@@ -152,7 +134,7 @@ void Texture::set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps, 
   unbind();
 }
 
-void Texture::set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt, GLenum wrapr) const
+void Texture::set_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt, GLenum wrapr) const
 {
   bind();
 
@@ -165,6 +147,23 @@ void Texture::set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps, 
   unbind();
 }
 
+void Texture::set_format(GLenum format)
+{
+  mTexFormat = format;
+  mPixFormat = format;
+}
+
+void Texture::set_format(GLenum internal, GLenum pixel)
+{
+  mTexFormat = internal;
+  mTexFormat = pixel;
+}
+
+void Texture::set_type(GLenum type)
+{
+  mPixType = type;
+}
+
 void Texture::generate_mipmaps() const
 {
   bind();
@@ -172,114 +171,40 @@ void Texture::generate_mipmaps() const
   unbind();
 }
 
-void Texture::attach_to(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype)
-{
-  mPtr = ptr;
-  mWidth = width;
-  mTexFormat = texformat;
-  mPixFormat = pixformat;
-  mPixType = pixtype;
-  mIsAttached = true;
-}
-
-void Texture::attach_to(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype)
-{
-  mPtr = ptr;
-  mWidth = width;
-  mHeight = height;
-  mTexFormat = texformat;
-  mPixFormat = pixformat;
-  mPixType = pixtype;
-  mIsAttached = true;
-}
-
-void Texture::attach_to(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype)
-{
-  mPtr = ptr;
-  mWidth = width;
-  mHeight = height;
-  mDepth = depth;
-  mTexFormat = texformat;
-  mPixFormat = pixformat;
-  mPixType = pixtype;
-  mIsAttached = true;
-}
-
-void Texture::detach()
-{
-  mPtr = nullptr;
-  mIsAttached = false;
-}
-
-void Texture::update() const
-{
-  if (is_attached())
-  {
-    bind();
-    if (dim() == 1)
-      glTexImage1D(target(), 0, mTexFormat, mWidth, 0, mPixFormat, mPixType, mPtr);
-    else if (dim() == 2)
-      glTexImage2D(target(), 0, mTexFormat, mWidth, mHeight, 0, mPixFormat, mPixType, mPtr);
-    else if (dim() == 3)
-      glTexImage3D(target(), 0, mTexFormat, mWidth, mHeight, mDepth, 0, mPixFormat, mPixType, mPtr);
-    unbind();
-  }
-}
-
-void Texture::upload(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype) const
+void Texture::upload(void *ptr, GLsizei width) const
 {
   if (dim() == 1)
   {
     bind();
-    glTexImage1D(target(), 0, texformat, width, 0, pixformat, pixtype, ptr);
+    glTexImage1D(target(), 0, internal_format(), width, 0, format(), type(), ptr);
     unbind();
   }
 }
 
-void Texture::upload(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype) const
+void Texture::upload(void *ptr, GLsizei width, GLsizei height) const
 {
   if (dim() == 2)
   {
     bind();
-    glTexImage2D(target(), 0, texformat, width, height, 0, pixformat, pixtype, ptr);
+    glTexImage2D(target(), 0, internal_format(), width, height, 0, format(), type(), ptr);
     unbind();
   }
 }
 
-void Texture::upload(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype) const
+void Texture::upload(void *ptr, GLsizei width, GLsizei height, GLsizei depth) const
 {
   if (dim() == 3)
   {
     bind();
-    glTexImage3D(target(), 0, texformat, width, height, depth, 0, pixformat, pixtype, ptr);
-    unbind();
-  }
-}
-
-void Texture::download()
-{
-  if (mPtr != nullptr)
-  {
-    bind();
-    glGetTexImage(target(), 0, format(), type(), mPtr);
+    glTexImage3D(target(), 0, internal_format(), width, height, depth, 0, format(), type(), ptr);
     unbind();
   }
 }
 
 void Texture::download(void *ptr)
 {
-  if (is_attached())
-  {
-    bind();
-    glGetTexImage(target(), 0, format(), type(), ptr);
-    unbind();
-  }
-}
-
-void Texture::download(void *ptr, GLenum format, GLenum type)
-{
   bind();
-  glGetTexImage(target(), 0, format, type, ptr);
+  glGetTexImage(target(), 0, format(), type(), ptr);
   unbind();
 }
 
@@ -299,11 +224,6 @@ void Texture::destroy()
     glDeleteTextures(1, &mId);
     mId = 0;
     mOwned = false;
-
-    mPtr = nullptr;
-    mWidth = 0;
-    mHeight = 0;
-    mDepth = 0;
   }
 }
 

@@ -110,7 +110,9 @@ bool FrameBuffer::attach(GLenum attachment,
   bind();
 
   mAttachments[attachment] = std::make_shared<Texture>(textarget, GL_LINEAR, GL_LINEAR);
-  mAttachments[attachment]->attach_to(nullptr, width, height, texformat, pixformat, pixtype); //allocate memory on GPU
+  mAttachments[attachment]->set_format(texformat, pixformat);
+  mAttachments[attachment]->set_type(pixtype);
+  mAttachments[attachment]->upload(nullptr, width, height); //allocate memory on GPU
   glFramebufferTexture2D(target(), attachment, textarget, mAttachments[attachment]->id(), 0);
 
   unbind();

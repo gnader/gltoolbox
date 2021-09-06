@@ -66,10 +66,6 @@ namespace gltoolbox
     inline GLenum target() const { return mTarget; }
     inline GLuint dim() const { return mDimention; }
 
-    inline GLsizei width() const { return mWidth; }
-    inline GLsizei height() const { return mHeight; }
-    inline GLsizei depth() const { return mDepth; }
-
     inline GLenum internal_format() const { return mTexFormat; }
     inline GLenum format() const { return mPixFormat; }
     inline GLenum type() const { return mPixType; }
@@ -77,29 +73,21 @@ namespace gltoolbox
     inline void bind() const { glBindTexture(target(), id()); }
     inline void unbind() const { glBindTexture(target(), 0); }
 
-    inline bool is_attached() const { return mIsAttached; }
+    void set_type(GLenum type);
+    void set_format(GLenum format);
+    void set_format(GLenum internal, GLenum pixel);
 
-    void set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps) const;
-    void set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt) const;
-    void set_texture_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt, GLenum wrapr) const;
+    void set_options(GLenum minfunc, GLenum magfunc, GLenum wraps) const;
+    void set_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt) const;
+    void set_options(GLenum minfunc, GLenum magfunc, GLenum wraps, GLenum wrapt, GLenum wrapr) const;
 
     void generate_mipmaps() const;
 
-    void attach_to(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype);
-    void attach_to(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype);
-    void attach_to(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype);
+    void upload(void *ptr, GLsizei width) const;
+    void upload(void *ptr, GLsizei width, GLsizei height) const;
+    void upload(void *ptr, GLsizei width, GLsizei height, GLsizei depth) const;
 
-    void detach();
-
-    void update() const;
-
-    void upload(void *ptr, GLsizei width, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
-    void upload(void *ptr, GLsizei width, GLsizei height, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
-    void upload(void *ptr, GLsizei width, GLsizei height, GLsizei depth, GLenum texformat, GLenum pixformat, GLenum pixtype) const;
-
-    void download();
     void download(void *ptr);
-    void download(void *ptr, GLenum format, GLenum type);
 
   protected:
     void create();
@@ -112,20 +100,11 @@ namespace gltoolbox
     bool mOwned;
 
     GLenum mTarget;
-
     GLuint mDimention;
-    GLsizei mWidth;
-    GLsizei mHeight; // if texture is 1D -> mHeight and mDepth have value 0
-    GLsizei mDepth;  // if texture is 2D -> mDepth have value 0
 
-    GLenum mTexFormat;
-    GLenum mPixFormat;
     GLenum mPixType;
-
-    // ! texture does not have ownership of the pointer.
-    // ! mPtr will be dangling if it get deleted or get out of scope
-    void *mPtr;
-    bool mIsAttached;
+    GLenum mPixFormat;
+    GLenum mTexFormat;
   };
 }
 

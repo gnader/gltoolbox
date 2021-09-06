@@ -79,7 +79,7 @@ namespace gltoolbox
       auto &font = it->second;
       mCurrFont = fontname;
       Texture::unpack_alignment(1);
-      mAtlas.upload(font.atlas.data(), font.atlasres, font.atlasres, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
+      mAtlas.upload(font.atlas.data(), font.atlasres, font.atlasres);
       mAtlas.generate_mipmaps();
     }
 
@@ -130,10 +130,8 @@ namespace gltoolbox
     std::unordered_map<std::string, Font> mFonts;
 
     //geometry
-    std::vector<float> mTQuad;
-    std::vector<float> mTexQuad;
-    std::array<float, 8> mVQuad;
-    std::array<uint8_t, 6> mIQuad;
+    std::vector<float> mPos;
+    std::vector<float> mTex;
 
     //rendering
     bool mIsInit;

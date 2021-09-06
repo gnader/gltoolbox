@@ -57,7 +57,7 @@ const std::string fShader = "#version 450 core \n"
                             "  float alpha = texture(atlas, fTex).r; \n"
                             "  colour = vec4(rgb, alpha); \n"
                             "}";
-;
+
 //------------------------------------------------------------------//
 
 std::string TextRenderer::charlist = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
@@ -66,10 +66,8 @@ int TextRenderer::padding = 4;
 TextRenderer::TextRenderer(bool doInit)
     : mCurrSize(1.f), mCurrRGB{0.f, 0.f, 0.f}, mCurrFont(""), mIsInit(false), mAtlas(GL_TEXTURE_2D)
 {
-  mTQuad.resize(4 * BUFFSIZE, 0.f);
-  mTexQuad.resize(4 * BUFFSIZE, 0.f);
-  mVQuad = {0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f};
-  mIQuad = {0, 1, 2, 0, 2, 3};
+  mPos.resize(4 * BUFFSIZE, 0.f);
+  mTex.resize(4 * BUFFSIZE, 0.f);
 
   if (doInit)
     init();
@@ -126,19 +124,17 @@ void TextRenderer::draw(const std::string &text, float x, float y,
 
       //compute vertex and texture coords
       const Character &c = it->second;
-      mTQuad[4 * j + 0] = advance + float(c.bearingX) * scaleX;
-      mTQuad[4 * j + 1] = (-float(c.height) + float(c.bearingY)) * scaleY;
-      mTQuad[4 * j + 2] = float(c.width) * scaleX;
-      mTQuad[4 * j + 3] = float(c.height) * scaleY;
+      mPos[4 * j + 0] = advance + float(c.bearingX) * scaleX;
+      mPos[4 * j + 1] = (-float(c.height) + float(c.bearingY)) * scaleY;
+      mPos[4 * j + 2] = float(c.width) * scaleX;
+      mPos[4 * j + 3] = float(c.height) * scaleY;
 
-      mTexQuad[4 * j + 0] = (c.texX - 1) * scaleT;
-      mTexQuad[4 * j + 1] = (c.texY - 1) * scaleT;
-      mTexQuad[4 * j + 2] = (c.width + 2) * scaleT;
-      mTexQuad[4 * j + 3] = (c.height + 2) * scaleT;
+      mTex[4 * j + 0] = (c.texX - 1) * scaleT;
+      mTex[4 * j + 1] = (c.texY - 1) * scaleT;
+      mTex[4 * j + 2] = (c.width + 2) * scaleT;
+      mTex[4 * j + 3] = (c.height + 2) * scaleT;
 
       advance += (float(c.advance >> 6) - 2) * scaleX;
-
-      // std::cout << mTQuad[4 * j + 2] << ", " << mTQuad[4 * j + 3] << std::endl;
 
       ++i;
       if (i >= text.size())
@@ -146,8 +142,8 @@ void TextRenderer::draw(const std::string &text, float x, float y,
     }
 
     //upload data to gpu
-    mVao.attribute_buffer("vPos")->upload(mTQuad.data(), mTQuad.size());
-    mVao.attribute_buffer("vTex")->upload(mTexQuad.data(), mTexQuad.size());
+    mVao.attribute_buffer("vPos")->upload(mPos.data(), mPos.size());
+    mVao.attribute_buffer("vTex")->upload(mTex.data(), mTex.size());
 
     //draw
     mVao.draw_elements(text.size());
@@ -245,7 +241,9 @@ bool TextRenderer::load_font(const std::string &filename, unsigned int size)
 void TextRenderer::init()
 {
   //setup texture
-  mAtlas.set_texture_options(GL_TEXTURE_2D, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+  mAtlas.set_options(GL_TEXTURE_2D, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+  mAtlas.set_type(GL_UNSIGNED_BYTE);
+  mAtlas.set_format(GL_RED);
 
   //setup program
   mPrg.attach_shader(std::move(gltoolbox::Shader(vShader, GL_VERTEX_SHADER)));
@@ -253,18 +251,24 @@ void TextRenderer::init()
   mPrg.link();
 
   //add uniforms and inputs
+  mPrg.add_uniform<std::array<float, 3>>("rgb");
+  mPrg.add_uniform<std::array<float, 2>>("pos");
+  mPrg.add_sampler("atlas", 0);
   mPrg.add_attribute("vQuad");
   mPrg.add_attribute("vPos");
   mPrg.add_attribute("vTex");
-  mPrg.add_sampler("atlas", 0);
-  mPrg.add_uniform<std::array<float, 3>>("rgb");
-  mPrg.add_uniform<std::array<float, 2>>("pos");
 
   //setup buffers
-  mVao.set_index_buffer<uint8_t>(GL_TRIANGLES, mIQuad.data(), mIQuad.size(), GL_STATIC_DRAW);
-  mVao.add_attribute<float>("vQuad", mVQuad.data(), mVQuad.size(), 2, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
-  mVao.add_attribute<float>("vPos", mTQuad.data(), mTQuad.size(), 4, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW, GL_FALSE, 1);
-  mVao.add_attribute<float>("vTex", mTexQuad.data(), mTexQuad.size(), 4, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW, GL_FALSE, 1);
+  std::array<float, 8> verts;
+  verts = {0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f};
+  mVao.add_attribute<float>("vQuad", verts.data(), verts.size(), 2, GL_FLOAT, 0, 0, GL_STATIC_DRAW);
+
+  std::array<uint8_t, 6> indices;
+  indices = {0, 1, 2, 0, 2, 3};
+  mVao.set_index_buffer<uint8_t>(GL_TRIANGLES, indices.data(), indices.size(), GL_STATIC_DRAW);
+
+  mVao.add_attribute<float>("vPos", mPos.data(), mPos.size(), 4, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW, GL_FALSE, 1);
+  mVao.add_attribute<float>("vTex", mTex.data(), mTex.size(), 4, GL_FLOAT, 0, 0, GL_DYNAMIC_DRAW, GL_FALSE, 1);
 
   mIsInit = true;
 }
