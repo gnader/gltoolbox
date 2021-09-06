@@ -70,6 +70,7 @@ namespace gltoolbox
     //======================================================
     // Buffer content
     //======================================================
+
     //send data from CPU memory to GPU memory
     void upload(void *ptr, GLsizei count) const;
     void upload(void *ptr, GLsizei offset, GLsizei count) const;
