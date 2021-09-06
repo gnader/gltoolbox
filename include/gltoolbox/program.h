@@ -63,10 +63,10 @@ namespace gltoolbox
     inline GLint num_attached_shader() const { return get_parameter(GL_ATTACHED_SHADERS); }
 
     bool has_shader(GLenum type);
-    inline const Shader &get_shader(GLenum type) const { return mShaderList.at(type); }
+    inline const std::shared_ptr<Shader> &get_shader(GLenum type) const { return mShaderList.at(type); }
 
-    void attach_shader(Shader &shader);
-    void attach_shader(Shader &&temp);
+    void attach_shader(const std::string &src, GLenum type);
+    void attach_shader(const std::shared_ptr<Shader> &shader);
 
     void detach_shader(GLenum type);
 
@@ -153,7 +153,8 @@ namespace gltoolbox
     GLuint mId;
     bool mOwned;
 
-    std::unordered_map<GLenum, Shader> mShaderList;
+    // std::unordered_map<GLenum, Shader> mShaderList;
+    std::unordered_map<GLenum, std::shared_ptr<Shader>> mShaderList;
 
     std::unordered_map<std::string, GLint> mAttributeList;
     std::unordered_map<std::string, std::pair<GLint, GLint>> mSamplerList;

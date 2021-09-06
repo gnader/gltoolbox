@@ -246,8 +246,8 @@ void TextRenderer::init()
   mAtlas.set_format(GL_RED);
 
   //setup program
-  mPrg.attach_shader(std::move(gltoolbox::Shader(vShader, GL_VERTEX_SHADER)));
-  mPrg.attach_shader(std::move(gltoolbox::Shader(fShader, GL_FRAGMENT_SHADER)));
+  mPrg.attach_shader(vShader, GL_VERTEX_SHADER);
+  mPrg.attach_shader(fShader, GL_FRAGMENT_SHADER);
   mPrg.link();
 
   //add uniforms and inputs

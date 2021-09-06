@@ -30,15 +30,10 @@ using namespace gltoolbox;
 #include <fstream>
 #include <iostream>
 
-Shader Shader::from_file(const std::string &filename, GLenum type)
+std::string Shader::src_from_file(const std::string &filename)
 {
   std::ifstream stream(filename);
-  std::string src = std::string(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>());
-
-  Shader shader(src, type);
-  shader.set_source_file(filename);
-
-  return shader;
+  return std::string(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>());
 }
 
 Shader::Shader()
@@ -51,11 +46,6 @@ Shader::Shader(const std::string &src, GLenum type)
 {
   create(type);
   set_source(src);
-
-  bool success = compile();
-  if (!success)
-    std::cerr << "[Error] : unable to compile " << type_as_str() << std::endl
-              << info_log() << std::endl;
 }
 
 Shader::Shader(Shader &&temp)
@@ -134,6 +124,11 @@ void Shader::set_source(const std::string &src) const
 {
   const GLchar *_src = src.c_str();
   glShaderSource(mId, 1, (const GLchar **)&_src, 0);
+
+  bool success = compile();
+  if (!success)
+    std::cerr << "[shader::set_source()] : unable to compile " << type_as_str() << std::endl
+              << info_log() << std::endl;
 }
 
 void Shader::set_source_file(const std::string &filename)

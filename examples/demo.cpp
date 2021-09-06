@@ -67,6 +67,7 @@ int main(int argc, char **argv)
   gltoolbox::TextRenderer txt;
   txt.load_font("./calibri.ttf", 64);
   txt.load_font("./consolas.ttf", 64);
+  txt.set_font("Consolas");
 
   std::vector<uint8_t> data;
   data.resize(1000 * 1000 * 3);
@@ -91,8 +92,8 @@ int main(int argc, char **argv)
 
     std::string text = "gltoolbox::TextRenderer()";
     double t0 = glfwGetTime();
-    txt.draw(text, 0, 100, "Consolas", 64, {0., 0, 0});
-    txt.draw("{ this works }", width / 2, 200, "Consolas", 64, {0., 0, 0});
+    txt.draw(text, 0, 100, 64);
+    txt.draw("{ this works }", width / 2, 200, 128);
     double t1 = glfwGetTime();
 
     double dt = t1 - t0;

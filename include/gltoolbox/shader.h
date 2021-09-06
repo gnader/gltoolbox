@@ -36,7 +36,7 @@ namespace gltoolbox
   class Shader
   {
   public:
-    static Shader from_file(const std::string &filename, GLenum type);
+    static std::string src_from_file(const std::string &filename);
 
   public:
     Shader();

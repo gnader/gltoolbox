@@ -68,31 +68,29 @@ bool Program::has_shader(GLenum type)
   return (search != mShaderList.end());
 }
 
-void Program::attach_shader(Shader &shader)
+void Program::attach_shader(const std::string &src, GLenum type)
 {
-  GLenum type = shader.type();
-
   if (has_shader(type))
     detach_shader(type);
 
-  mShaderList.emplace(type, std::move(shader));
-  glAttachShader(id(), mShaderList[type].id());
+  mShaderList[type] = std::make_shared<Shader>(src, type);
+  glAttachShader(id(), mShaderList[type]->id());
 }
 
-void Program::attach_shader(Shader &&temp)
+void Program::attach_shader(const std::shared_ptr<Shader> &shader)
 {
-  GLenum type = temp.type();
+  GLenum type = shader->type();
 
   if (has_shader(type))
     detach_shader(type);
 
-  mShaderList.emplace(type, std::move(temp));
-  glAttachShader(id(), mShaderList[type].id());
+  mShaderList[type] = shader;
+  glAttachShader(id(), mShaderList[type]->id());
 }
 
 void Program::detach_shader(GLenum type)
 {
-  glDetachShader(id(), mShaderList.at(type).id());
+  glDetachShader(id(), mShaderList.at(type)->id());
   mShaderList.erase(type);
 }
 

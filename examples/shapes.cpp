@@ -125,8 +125,8 @@ void Shape2D::PolygonRenderer::init(int npts)
                      "}";
 
   //setup program
-  mPrg.attach_shader(std::move(gltoolbox::Shader(vert, GL_VERTEX_SHADER)));
-  mPrg.attach_shader(std::move(gltoolbox::Shader(frag, GL_FRAGMENT_SHADER)));
+  mPrg.attach_shader(vert, GL_VERTEX_SHADER);
+  mPrg.attach_shader(frag, GL_FRAGMENT_SHADER);
   mPrg.link();
 
   mPrg.add_attribute("vert");
